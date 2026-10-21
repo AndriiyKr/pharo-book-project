@@ -162,7 +162,7 @@ Book >> printVolumeInfoOn: aStream [
 Book >> printYearOn: aStream [
     year 
         ifNil: [ aStream nextPutAll: self class defaultYearString ]
-        ifNotNil: [ aStream print: year number ]
+        ifNotNil: [ aStream print: year year ]
 ]
 
 { #category : 'calculations' }
