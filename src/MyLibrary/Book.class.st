@@ -62,13 +62,11 @@ Book class >> defaultYearString [
 
 { #category : 'constants' }
 Book class >> pagesPerPrintedSheet [
-    "Повертає константу для розрахунку друкованих аркушів"
     ^ 32
 ]
 
 { #category : 'comparing' }
 Book >> < aBook [
-    "Порівняння книг зазагальним обсягом сторінок"
 	 ^ self totalVolume < aBook totalVolume
 ]
 

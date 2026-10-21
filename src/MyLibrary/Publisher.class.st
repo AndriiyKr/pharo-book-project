@@ -92,5 +92,5 @@ Publisher >> printOn: aStream [
     aStream nextPutAll: (name ifNil: [ self class defaultName ]).
     aStream nextPutAll: ', м. '.
     aStream nextPutAll: (city ifNil: [ self class defaultCity ]).
-    aStream nextPutAll: ')'
+    aStream nextPut: $)
 ]

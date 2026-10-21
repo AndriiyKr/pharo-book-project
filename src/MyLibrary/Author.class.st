@@ -109,5 +109,5 @@ Author >> lastName: aString [
 { #category : 'printing' }
 Author >> printOn: aStream [
     super printOn: aStream.
-    aStream nextPutAll: ' ('; nextPutAll: self fullName; nextPutAll: ')'
+    aStream nextPutAll: ' ('; nextPutAll: self fullName; nextPut: $)
 ]
