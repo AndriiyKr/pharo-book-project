@@ -150,9 +150,9 @@ Book >> printTitleOn: aStream [
 { #category : 'printing' }
 Book >> printVolumeInfoOn: aStream [
     aStream 
-        print: self totalVolume; 
+        nextPutAll: self totalVolume; 
         nextPutAll: ' стор. (';
-        print: self printedSheets; 
+        nextPutAll: self printedSheets; 
         nextPutAll: ' друк. арк.)'
 ]
 
@@ -160,7 +160,7 @@ Book >> printVolumeInfoOn: aStream [
 Book >> printYearOn: aStream [
     year 
         ifNil: [ aStream nextPutAll: self class defaultYearString ]
-        ifNotNil: [ aStream print: year year ]
+        ifNotNil: [ aStream nextPutAll: year year ]
 ]
 
 { #category : 'calculations' }

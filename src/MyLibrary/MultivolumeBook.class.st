@@ -36,11 +36,11 @@ MultivolumeBook >> - aVolume [
 { #category : 'printing' }
 MultivolumeBook >> printVolumeInfoOn: aStream [
     aStream 
-        print: self volumes size;
+        nextPutAll: self volumes size;
         nextPutAll: ' томів (загалом ';
-        print: self totalVolume; 
+        nextPutAll: self totalVolume; 
         nextPutAll: ' стор., ';
-        print: self printedSheets; 
+        nextPutAll: self printedSheets; 
         nextPutAll: ' друк. арк.)'
 ]
 
