@@ -107,6 +107,45 @@ LibraryTest >> testPrintOn [
 ]
 
 { #category : 'tests' }
+LibraryTest >> testRemoveBook [
+	"Перевіряє успішне видалення книги та обробку помилки для неіснуючого об'єкта"
+	| initialSize dummyBook |
+	initialSize := library books size.
+	
+	"Успішне видалення існуючої книги (singleVolume додається у setUp)"
+	library removeBook: singleVolume.
+	self assert: library books size equals: initialSize - 1.
+	self deny: (library books includes: singleVolume).
+	
+	"Перевірка помилки при спробі видалити книгу, якої немає"
+	dummyBook := SingleVolumeBook new title: 'Неіснуюча книга'; yourself.
+	self should: [ library removeBook: dummyBook ] raise: Error.
+]
+
+{ #category : 'tests' }
+LibraryTest >> testSTONSerialization [
+	"Перевіряє, чи коректно бібліотека зберігається та відновлюється зі STON"
+	| fileName testFile loadedLibrary |
+	
+	fileName := 'test_library.ston'.
+	testFile := fileName asFileReference.
+	
+	"Зберігаємо фікстуру (library з setUp, де вже є 5 книг)"
+	library saveToSTON: fileName.
+	
+	"Створюємо нову бібліотеку і завантажуємо"
+	loadedLibrary := Library new.
+	loadedLibrary loadFromSTON: fileName.
+	
+	"Робимо перевірки"
+	self assert: loadedLibrary books size equals: library books size.
+	self assert: loadedLibrary books first title equals: library books first title.
+	
+	"Видаляємо тестовий файл, щоб не засмічувати диск"
+	testFile ensureDelete.
+]
+
+{ #category : 'tests' }
 LibraryTest >> testWithBooks [
 	"Перевірка створення бібліотеки через метод класу withBooks:"
 	| newLib booksArray |

@@ -150,9 +150,9 @@ Book >> printTitleOn: aStream [
 { #category : 'printing' }
 Book >> printVolumeInfoOn: aStream [
     aStream 
-        nextPutAll: self totalVolume; 
+        nextPutAll: self totalVolume printString; 
         nextPutAll: ' стор. (';
-        nextPutAll: self printedSheets; 
+        nextPutAll: self printedSheets printString; 
         nextPutAll: ' друк. арк.)'
 ]
 

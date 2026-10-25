@@ -65,11 +65,11 @@ Volume >> printOn: aStream [
     super printOn: aStream.
     aStream 
         nextPutAll: ' (Том ';
-        print: self volumeNumber;
+        nextPutAll: self volumeNumber printString;
         nextPutAll: ': ';
         nextPutAll: self titleVolume;
         nextPutAll: ', ';
-        print: self pageCount;
+        nextPutAll: self pageCount printString;
         nextPutAll: ' стор.)'
 ]
 

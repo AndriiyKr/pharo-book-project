@@ -134,6 +134,14 @@ Library >> booksByAuthor: anAuthor [
 	^ books select: [ :eachBook | eachBook authors includes: anAuthor ]
 ]
 
+{ #category : 'file-io' }
+Library >> exportToText: aFileName [
+    "Зберігає текстове представлення бібліотеки у файл"
+    aFileName asFileReference writeStreamDo: [ :stream |
+        self printAllBooksOn: stream
+    ]
+]
+
 { #category : 'initialization' }
 Library >> initialize [
 	super initialize.
@@ -150,6 +158,14 @@ Library >> largestBook [
 			ifTrue: [ eachBook ]
 			ifFalse: [ maxBook ]
 	]
+]
+
+{ #category : 'file-io' }
+Library >> loadFromSTON: aFileName [
+    "Десеріалізує об'єкти потрібних класів"
+    aFileName asFileReference readStreamDo: [ :stream |
+        books := STON fromStream: stream.
+    ]
 ]
 
 { #category : 'printing' }
@@ -173,4 +189,18 @@ Library >> printOn: aStream [
 	aStream nextPutAll: ' ('.
 	aStream nextPutAll: books size printString.
 	aStream nextPutAll: ' книг)'
+]
+
+{ #category : 'adding/removing' }
+Library >> removeBook: aBook [
+	"Видаляє книгу з контейнера. Якщо її немає, то генерує помилку."
+	books remove: aBook ifAbsent: [ self error: 'Книгу не знайдено у бібліотеці' ]
+]
+
+{ #category : 'file-io' }
+Library >> saveToSTON: aFileName [
+    "Серіалізує всі об'єкти"
+    aFileName asFileReference writeStreamDo: [ :stream |
+        STON put: books onStreamPretty: stream.
+    ]
 ]

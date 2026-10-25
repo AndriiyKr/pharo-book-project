@@ -49,13 +49,13 @@ Monograph >> illustrationCount: anInteger [
 { #category : 'printing' }
 Monograph >> printVolumeInfoOn: aStream [
     aStream 
-        nextPutAll: self pageCount; 
+        nextPutAll: self pageCount printString; 
         nextPutAll: ' стор. та ';
-        nextPutAll: self illustrationCount;
+        nextPutAll: self illustrationCount printString;
         nextPutAll: ' іл. (загальний обсяг: ';
-        nextPutAll: self totalVolume;
+        nextPutAll: self totalVolume printString;
         nextPutAll: ' стор., ';
-        nextPutAll: self printedSheets; 
+        nextPutAll: self printedSheets printString; 
         nextPutAll: ' друк. арк.)'
 ]
 
