@@ -57,8 +57,12 @@ Library >> addBook: aBook [
 
 { #category : 'ui-dialogs' }
 Library >> addBookViaDialog [
-	"Інтерфейс діалогу з користувачем для створення простої однотомної книги"
-	| titleStr yearStr pagesStr newBook |
+	"Інтерфейс діалогу з користувачем для створення книг різних типів"
+	| choices bookType titleStr yearStr authorFirst authorLast pubName newBook newAuthor newPublisher pagesStr illusStr volCountStr volPagesStr |
+	
+	choices := { 'Однотомник' . 'Монографія' . 'Багатотомник' }.
+	bookType := UIManager default chooseFrom: choices title: 'Оберіть тип книги:'.
+	bookType = 0 ifTrue: [ ^ self ]. "Користувач скасував вибір"
 	
 	titleStr := UIManager default request: 'Введіть назву книги:' initialAnswer: 'Нова книга'.
 	titleStr ifNil: [ ^ self ].
@@ -66,17 +70,51 @@ Library >> addBookViaDialog [
 	yearStr := UIManager default request: 'Введіть рік видання:' initialAnswer: '2023'.
 	yearStr ifNil: [ ^ self ].
 	
-	pagesStr := UIManager default request: 'Введіть кількість сторінок:' initialAnswer: '100'.
-	pagesStr ifNil: [ ^ self ].
+	authorFirst := UIManager default request: 'Введіть ім''я автора:' initialAnswer: 'Тарас'.
+	authorFirst ifNil: [ ^ self ].
 	
-	newBook := SingleVolumeBook new
+	authorLast := UIManager default request: 'Введіть прізвище автора:' initialAnswer: 'Шевченко'.
+	authorLast ifNil: [ ^ self ].
+	
+	pubName := UIManager default request: 'Введіть назву видавництва:' initialAnswer: 'А-БА-БА-ГА-ЛА-МА-ГА'.
+	pubName ifNil: [ ^ self ].
+	
+	newAuthor := Author new firstName: authorFirst; lastName: authorLast.
+	newPublisher := Publisher new name: pubName.
+	
+	bookType = 1 ifTrue: [
+		pagesStr := UIManager default request: 'Введіть кількість сторінок:' initialAnswer: '100'.
+		pagesStr ifNil: [ ^ self ].
+		newBook := SingleVolumeBook new pageCount: pagesStr asInteger.
+	].
+	
+	bookType = 2 ifTrue: [
+		pagesStr := UIManager default request: 'Введіть кількість сторінок:' initialAnswer: '200'.
+		pagesStr ifNil: [ ^ self ].
+		illusStr := UIManager default request: 'Введіть кількість ілюстрацій:' initialAnswer: '10'.
+		illusStr ifNil: [ ^ self ].
+		newBook := Monograph new pageCount: pagesStr asInteger; illustrationCount: illusStr asInteger.
+	].
+	
+	bookType = 3 ifTrue: [
+		newBook := MultivolumeBook new.
+		volCountStr := UIManager default request: 'Введіть кількість томів:' initialAnswer: '2'.
+		volCountStr ifNil: [ ^ self ].
+		1 to: volCountStr asInteger do: [ :i |
+			volPagesStr := UIManager default request: ('Введіть кількість сторінок для тому ', i asString, ':') initialAnswer: '300'.
+			volPagesStr ifNil: [ ^ self ].
+			newBook + (Volume new volumeNumber: i; pageCount: volPagesStr asInteger).
+		].
+	].
+	
+	newBook
 		title: titleStr;
 		year: (Year year: yearStr asInteger);
-		pageCount: pagesStr asInteger;
-		yourself.
+		addAuthor: newAuthor;
+		addPublisher: newPublisher.
 		
 	self addBook: newBook.
-	UIManager default inform: 'Книгу "', titleStr, '" успішно додано до бібліотеки!'.
+	UIManager default inform: 'Книгу "', titleStr, '" успішно додано до бібліотеки!'
 ]
 
 { #category : 'adding' }
