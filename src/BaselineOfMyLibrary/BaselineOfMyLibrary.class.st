@@ -14,3 +14,8 @@ BaselineOfMyLibrary >> baseline: spec [
         spec package: 'MyLibrary-Tests' with: [ spec requires: #('MyLibrary') ]
     ]
 ]
+
+{ #category : 'baselines' }
+BaselineOfMyLibrary >> projectClass [
+    ^ MetacelloCypressBaselineProject
+]
