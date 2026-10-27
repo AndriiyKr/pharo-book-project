@@ -4,9 +4,8 @@ Class {
 	#instVars : [
 		'book'
 	],
-	#category : 'MyLibrary-tests',
-	#package : 'MyLibrary',
-	#tag : 'tests'
+	#category : 'MyLibrary-Tests',
+	#package : 'MyLibrary-Tests'
 }
 
 { #category : 'running' }

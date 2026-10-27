@@ -11,5 +11,6 @@ BaselineOfMyLibrary >> baseline: spec [
     <baseline>
     spec for: #common do: [ 
         spec package: 'MyLibrary'.
+        spec package: 'MyLibrary-Tests' with: [ spec requires: #('MyLibrary') ]
     ]
 ]

@@ -33,9 +33,9 @@ Class {
 	#instVars : [
 		'books'
 	],
-	#category : 'MyLibrary-library',
+	#category : 'MyLibrary-container',
 	#package : 'MyLibrary',
-	#tag : 'library'
+	#tag : 'container'
 }
 
 { #category : 'instance creation' }
