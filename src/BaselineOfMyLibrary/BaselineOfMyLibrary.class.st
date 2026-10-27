@@ -1,6 +1,6 @@
 Class {
 	#name : 'BaselineOfMyLibrary',
-	#superclass : 'Object',
+	#superclass : 'BaselineOf',
 	#category : 'BaselineOfMyLibrary-library',
 	#package : 'BaselineOfMyLibrary',
 	#tag : 'library'
