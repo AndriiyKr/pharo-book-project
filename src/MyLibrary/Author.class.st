@@ -28,6 +28,16 @@ Class {
 	#tag : 'library'
 }
 
+{ #category : 'instance creation' }
+Author class >> authorFromDictionary: aDictionary [
+    ^ self new
+        firstName: (aDictionary at: 'firstName' ifAbsent: [ nil ]);
+        lastName: (aDictionary at: 'lastName' ifAbsent: [ nil ]);
+        birthDate: (aDictionary at: 'birthDate' ifAbsent: [ nil ]);
+        city: (aDictionary at: 'city' ifAbsent: [ nil ]);
+        yourself
+]
+
 { #category : 'constants' }
 Author class >> defaultAuthor [
     ^ self 
@@ -35,6 +45,16 @@ Author class >> defaultAuthor [
         lastName: self defaultLastName 
         birthDate: Date today 
         city: 'Невідоме місто'
+]
+
+{ #category : 'constants' }
+Author class >> defaultBirthDate [
+    ^ Date today
+]
+
+{ #category : 'constants' }
+Author class >> defaultCity [
+    ^ 'Невідоме місто'
 ]
 
 { #category : 'constants' }
@@ -47,7 +67,7 @@ Author class >> defaultLastName [
     ^ 'Автор'
 ]
 
-{ #category : 'accessing' }
+{ #category : 'instance creation' }
 Author class >> firstName: aFirstName lastName: aLastName birthDate: aDate city: aCity [
     ^ self new
         firstName: aFirstName;
@@ -64,10 +84,12 @@ Author >> birthDate [
 
 { #category : 'accessing' }
 Author >> birthDate: aDate [
-    (aDate isKindOf: Date) ifFalse: [ 
+    | finalDate |
+    finalDate := aDate ifNil: [ self class defaultBirthDate ].
+    (finalDate isKindOf: Date) ifFalse: [ 
         self error: 'Помилка: birthDate має бути екземпляром Date!' 
     ].
-    birthDate := aDate
+    birthDate := finalDate
 ]
 
 { #category : 'accessing' }
@@ -77,7 +99,8 @@ Author >> city [
 
 { #category : 'accessing' }
 Author >> city: aString [
-    city := aString
+    city := (aString ifNil: [ self class defaultCity ]) 
+        ifEmpty: [ self class defaultCity ]
 ]
 
 { #category : 'accessing' }
@@ -87,7 +110,8 @@ Author >> firstName [
 
 { #category : 'accessing' }
 Author >> firstName: aString [
-    firstName := aString
+    firstName := (aString ifNil: [ self class defaultFirstName ]) 
+        ifEmpty: [ self class defaultFirstName ]
 ]
 
 { #category : 'accessing' }
@@ -103,7 +127,8 @@ Author >> lastName [
 
 { #category : 'accessing' }
 Author >> lastName: aString [
-    lastName := aString
+    lastName := (aString ifNil: [ self class defaultLastName ]) 
+        ifEmpty: [ self class defaultLastName ]
 ]
 
 { #category : 'printing' }
