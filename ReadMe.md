@@ -38,4 +38,11 @@
     *   `Monograph` (Монографія) успадковує `SingleVolumeBook` і додає властивість `illustrationCount`.
 *   **Поліморфізм та перевантаження операторів**: Для однотомних видань і томів оператори `+ aNumber` та `- aNumber` модифікують кількість сторінок, тоді як для багатотомника оператори `+ aVolume` та `- aVolume` додають або видаляють цілі томи з колекції.
 
-
+### Завантаження проєкту
+Щоб завантажити проєкт собі до середовища, виконайте:
+```
+Metacello new
+    baseline: 'MyLibrary';
+    repository: 'github://AndriiyKr/pharo-book-project:book-code/src';
+    load.
+```
