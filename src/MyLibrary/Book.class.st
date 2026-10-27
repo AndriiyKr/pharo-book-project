@@ -79,6 +79,16 @@ Book class >> pagesPerPrintedSheet [
     ^ 32
 ]
 
+{ #category : 'arithmetic' }
+Book >> + anArgument [
+    ^ self subclassResponsibility
+]
+
+{ #category : 'arithmetic' }
+Book >> - anArgument [
+    ^ self subclassResponsibility
+]
+
 { #category : 'comparing' }
 Book >> < aBook [
 	 ^ self totalVolume < aBook totalVolume
