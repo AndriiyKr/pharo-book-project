@@ -46,7 +46,7 @@ PublisherTest >> testDefaultPublisher [
 
     self assert: defPublisher name equals: Publisher defaultName.
     self assert: defPublisher city equals: Publisher defaultCity.
-    self assert: defPublisher foundationYear year equals: 2000.
+    self assert: defPublisher foundationYear equals: Year current.
 ]
 
 { #category : 'tests' }
