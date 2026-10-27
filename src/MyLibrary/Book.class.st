@@ -18,7 +18,7 @@ Instance Variables:
 "
 Class {
 	#name : 'Book',
-	#superclass : 'Object',
+	#superclass : 'Magnitude',
 	#instVars : [
 		'authors',
 		'title',
@@ -37,6 +37,20 @@ Book class >> authors: authorCollection title: titleString publishers: publisher
         title: titleString;
         publishers: publisherCollection;
         year: yearInteger;
+        yourself
+]
+
+{ #category : 'instance creation' }
+Book class >> bookFromDictionary: aDictionary [
+    ^ self new
+        title: ((aDictionary at: 'title' ifAbsent: [ self defaultTitle ]) 
+            ifEmpty: [ self defaultTitle ]);
+        year: ((aDictionary at: 'year' ifAbsent: [ self defaultYearString ]) 
+            ifEmpty: [ self defaultYearString ]);
+        authors: ((aDictionary at: 'authors' ifAbsent: [ OrderedCollection new ]) 
+            ifEmpty: [ OrderedCollection new ]);
+        publishers: ((aDictionary at: 'publishers' ifAbsent: [ OrderedCollection new ]) 
+            ifEmpty: [ OrderedCollection new ]);
         yourself
 ]
 
@@ -72,9 +86,12 @@ Book >> < aBook [
 
 { #category : 'comparing' }
 Book >> = aBook [
-    "Перевірка на рівність обсягів"
-    (aBook isKindOf: Book) ifFalse: [ ^ false ].
-    ^ self totalVolume = aBook totalVolume
+    self == aBook ifTrue: [ ^ true ].
+    self class = aBook class ifFalse: [ ^ false ].
+    ^ self title = aBook title 
+        and: [ self year = aBook year 
+        and: [ self authors = aBook authors 
+        and: [ self publishers = aBook publishers ] ] ]
 ]
 
 { #category : 'initialization' }
@@ -99,7 +116,8 @@ Book >> authors: aCollection [
 
 { #category : 'comparing' }
 Book >> hash [
-    ^ self totalVolume hash
+    ^ (self title hash bitXor: self year hash) 
+        bitXor: (self authors hash bitXor: self publishers hash)
 ]
 
 { #category : 'initialization' }
