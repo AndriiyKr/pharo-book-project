@@ -1,98 +1,111 @@
 Class {
 	#name : 'PublisherTest',
 	#superclass : 'TestCase',
-	#instVars : [
-		'publisher'
-	],
 	#category : 'MyLibrary-Tests',
 	#package : 'MyLibrary-Tests'
 }
 
-{ #category : 'running' }
-PublisherTest >> setUp [
-    super setUp.
+{ #category : 'tests' }
+PublisherTest >> testCity [
+    | publisher |
+    publisher := Publisher new.
+    
+    publisher city: 'Київ'.
+    self assert: publisher city equals: 'Київ'.
+    
+    publisher city: nil.
+    self assert: publisher city equals: Publisher defaultCity.
+    
+    publisher city: ''.
+    self assert: publisher city equals: Publisher defaultCity.
+]
+
+{ #category : 'tests' }
+PublisherTest >> testClassConstructor [
+    | publisher validYear |
+    validYear := Year year: 1992.
+
     publisher := Publisher 
-        name: 'Видавництво Старого Лева' 
-        city: 'Львів' 
-        foundationYear: (Year year: 2001).
-]
-
-{ #category : 'tests' }
-PublisherTest >> testAccessing [
-    self assert: publisher name equals: 'Видавництво Старого Лева'.
-    self assert: publisher city equals: 'Львів'.
-    self assert: publisher foundationYear year equals: 2001.
-]
-
-{ #category : 'tests' }
-PublisherTest >> testConstructor [
-    | newPublisher testYear |
-    testYear := Year year: 2012.
-
-    newPublisher := Publisher 
-        name: 'Наш Формат' 
+        name: 'А-БА-БА-ГА-ЛА-МА-ГА' 
         city: 'Київ' 
-        foundationYear: testYear.
-
-    self assert: newPublisher name equals: 'Наш Формат'.
-    self assert: newPublisher city equals: 'Київ'.
-    self assert: newPublisher foundationYear equals: testYear.
+        foundationYear: validYear.
+        
+    self assert: publisher name equals: 'А-БА-БА-ГА-ЛА-МА-ГА'.
+    self assert: publisher city equals: 'Київ'.
+    self assert: publisher foundationYear equals: validYear.
+    
+    publisher := Publisher 
+        name: nil 
+        city: nil 
+        foundationYear: nil.
+        
+    self assert: publisher name equals: Publisher defaultName.
+    self assert: publisher city equals: Publisher defaultCity.
+    self assert: publisher foundationYear equals: Publisher defaultFoundationYear.
 ]
 
 { #category : 'tests' }
 PublisherTest >> testDefaultPublisher [
-    | defPublisher |
-    defPublisher := Publisher defaultPublisher.
-
-    self assert: defPublisher name equals: Publisher defaultName.
-    self assert: defPublisher city equals: Publisher defaultCity.
-    self assert: defPublisher foundationYear equals: Year current.
+    | publisher |
+    publisher := Publisher defaultPublisher.
+    
+    self assert: publisher name equals: Publisher defaultName.
+    self assert: publisher city equals: Publisher defaultCity.
+    self assert: publisher foundationYear equals: Publisher defaultFoundationYear.
 ]
 
 { #category : 'tests' }
-PublisherTest >> testFoundationYearTypeValidation [
-    self should: [ publisher foundationYear: 2001 ] raise: Error.
-    self should: [ publisher foundationYear: '2001' ] raise: Error.
+PublisherTest >> testFoundationYear [
+    | publisher validYear |
+    publisher := Publisher new.
+    validYear := Year year: 1992.
 
-    publisher foundationYear: (Year year: 2026).
-    self assert: publisher foundationYear year equals: 2026.
+    publisher foundationYear: validYear.
+    self assert: publisher foundationYear equals: validYear.
+    
+    publisher foundationYear: nil.
+    self assert: publisher foundationYear equals: Publisher defaultFoundationYear.
+    
+    self should: [ publisher foundationYear: 1992 ] raise: Error.
+    self should: [ publisher foundationYear: '1992' ] raise: Error.
 ]
 
 { #category : 'tests' }
-PublisherTest >> testPrintOn [
-    | stream resultString |
-    stream := WriteStream on: String new.
-    publisher printOn: stream.
-    resultString := stream contents.
-    self assert: (resultString includesSubstring: 'Видавництво Старого Лева').
-    self assert: (resultString includesSubstring: 'м. Львів').
-    self assert: (resultString includesSubstring: '(').
-    self assert: (resultString includesSubstring: ')').
+PublisherTest >> testName [
+    | publisher |
+    publisher := Publisher new.
+    
+    publisher name: 'А-БА-БА-ГА-ЛА-МА-ГА'.
+    self assert: publisher name equals: 'А-БА-БА-ГА-ЛА-МА-ГА'.
+
+    publisher name: nil.
+    self assert: publisher name equals: Publisher defaultName.
+    
+    publisher name: ''.
+    self assert: publisher name equals: Publisher defaultName.
 ]
 
 { #category : 'tests' }
-PublisherTest >> testPrintOnWithMissingData [
-    | emptyPublisher stream resultString |
-    emptyPublisher := Publisher new.
-    stream := WriteStream on: String new.
-    emptyPublisher printOn: stream.
-    resultString := stream contents.
-    self assert: (resultString includesSubstring: Publisher defaultName).
-    self assert: (resultString includesSubstring: Publisher defaultCity).
-]
+PublisherTest >> testPublisherFromDictionary [
+    | dict publisher emptyDict emptyPublisher validYear |
+    validYear := Year year: 1992.
+    
+    dict := Dictionary new.
+    dict at: 'name' put: 'А-БА-БА-ГА-ЛА-МА-ГА';
+         at: 'city' put: 'Київ';
+         at: 'foundationYear' put: validYear.
+         
+    publisher := Publisher publisherFromDictionary: dict.
+    self assert: publisher name equals: 'А-БА-БА-ГА-ЛА-МА-ГА'.
+    self assert: publisher city equals: 'Київ'.
+    self assert: publisher foundationYear equals: validYear.
+    
 
-{ #category : 'tests' }
-PublisherTest >> testSetters [
-    | blankPublisher testYear |
-    testYear := Year year: 1992.
 
-    blankPublisher := Publisher new.
-
-    blankPublisher name: 'А-БА-БА-ГА-ЛА-МА-ГА'.
-    blankPublisher city: 'Київ'.
-    blankPublisher foundationYear: testYear.
-
-    self assert: blankPublisher name equals: 'А-БА-БА-ГА-ЛА-МА-ГА'.
-    self assert: blankPublisher city equals: 'Київ'.
-    self assert: blankPublisher foundationYear equals: testYear.
+    emptyDict := Dictionary new.
+    emptyPublisher := Publisher publisherFromDictionary: emptyDict.
+    
+    self assert: emptyPublisher name equals: Publisher defaultName.
+    self assert: emptyPublisher city equals: Publisher defaultCity.
+    self assert: emptyPublisher foundationYear equals: Publisher defaultFoundationYear.
 ]

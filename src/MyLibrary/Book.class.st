@@ -125,13 +125,6 @@ Book >> hash [
         bitXor: (self authors hash bitXor: self publishers hash)
 ]
 
-{ #category : 'initialization' }
-Book >> initialize [
-    super initialize.
-    authors := OrderedCollection new.
-    publishers := OrderedCollection new.
-]
-
 { #category : 'printing' }
 Book >> printAuthorsOn: aStream [
     authors isEmpty 
