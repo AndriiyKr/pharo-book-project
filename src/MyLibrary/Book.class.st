@@ -92,12 +92,18 @@ Book >> = aBook [
 
 { #category : 'initialization' }
 Book >> addAuthor: anAuthor [
-    authors add: anAuthor
+    authors ifNil: [ authors := OrderedCollection new ].
+    (authors size = 1 and: [ authors first lastName = Author defaultLastName ])
+        ifTrue: [ authors removeAll ].
+    authors addIfNotPresent: anAuthor
 ]
 
 { #category : 'initialization' }
 Book >> addPublisher: aPublisher [
-    publishers add: aPublisher
+    publishers ifNil: [ publishers := OrderedCollection new ].
+    (publishers size = 1 and: [ publishers first name = Publisher defaultName ])
+        ifTrue: [ publishers removeAll ].
+    publishers addIfNotPresent: aPublisher
 ]
 
 { #category : 'initialization' }
