@@ -31,6 +31,11 @@ Publisher class >> defaultCity [
 ]
 
 { #category : 'constants' }
+Publisher class >> defaultFoundationYear [
+    ^ Year current
+]
+
+{ #category : 'constants' }
 Publisher class >> defaultName [
     ^ 'Невідоме видавництво'
 ]
@@ -40,7 +45,7 @@ Publisher class >> defaultPublisher [
     ^ self 
         name: self defaultName 
         city: self defaultCity 
-        foundationYear: (Year year: 2000)
+        foundationYear: self defaultFoundationYear.
 ]
 
 { #category : 'instance creation' }
@@ -52,6 +57,15 @@ Publisher class >> name: aName city: aCity foundationYear: aYear [
         yourself
 ]
 
+{ #category : 'constants' }
+Publisher class >> publisherFromDictionary: aDictionary [
+    ^ self new
+        name: (aDictionary at: 'name' ifAbsent: [ nil ]);
+        city: (aDictionary at: 'city' ifAbsent: [ nil ]);
+        foundationYear: (aDictionary at: 'foundationYear' ifAbsent: [ nil ]);
+        yourself
+]
+
 { #category : 'accessing' }
 Publisher >> city [
     ^ city
@@ -59,7 +73,8 @@ Publisher >> city [
 
 { #category : 'accessing' }
 Publisher >> city: aString [
-    city := aString
+    city := (aString ifNil: [ self class defaultCity ]) 
+        ifEmpty: [ self class defaultCity ]
 ]
 
 { #category : 'accessing' }
@@ -69,10 +84,12 @@ Publisher >> foundationYear [
 
 { #category : 'accessing' }
 Publisher >> foundationYear: aYear [
-    (aYear isKindOf: Year) ifFalse: [ 
+    | finalYear |
+    finalYear := aYear ifNil: [ self class defaultFoundationYear ].
+    (finalYear isKindOf: Year) ifFalse: [ 
         self error: 'Помилка: foundationYear має бути екземпляром Year!' 
     ].
-    foundationYear := aYear
+    foundationYear := finalYear
 ]
 
 { #category : 'accessing' }
@@ -82,7 +99,8 @@ Publisher >> name [
 
 { #category : 'accessing' }
 Publisher >> name: aString [
-    name := aString
+    name := (aString ifNil: [ self class defaultName ]) 
+        ifEmpty: [ self class defaultName ]
 ]
 
 { #category : 'printing' }
