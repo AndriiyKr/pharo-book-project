@@ -44,5 +44,5 @@
 Metacello new
     baseline: 'MyLibrary';
     repository: 'github://AndriiyKr/pharo-book-project:book-code/src';
-    load.
+    load
 ```
