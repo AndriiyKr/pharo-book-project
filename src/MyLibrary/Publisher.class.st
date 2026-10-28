@@ -92,6 +92,14 @@ Publisher >> foundationYear: aYear [
     foundationYear := finalYear
 ]
 
+{ #category : 'initialization' }
+Publisher >> initialize [
+    super initialize.
+    name := self class defaultName.
+    city := self class defaultCity.
+    foundationYear := self class defaultFoundationYear.
+]
+
 { #category : 'accessing' }
 Publisher >> name [
     ^ name

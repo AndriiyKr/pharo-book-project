@@ -120,6 +120,15 @@ Author >> fullName [
     ^ (firstName ifNil: [ self class defaultFirstName ]), ' ', (lastName ifNil: [ self class defaultLastName ])
 ]
 
+{ #category : 'initialization' }
+Author >> initialize [
+	 super initialize.
+    firstName := self class defaultFirstName.
+    lastName := self class defaultLastName.
+    birthDate := self class defaultBirthDate.
+    city := self class defaultCity.
+]
+
 { #category : 'accessing' }
 Author >> lastName [
     ^ lastName
