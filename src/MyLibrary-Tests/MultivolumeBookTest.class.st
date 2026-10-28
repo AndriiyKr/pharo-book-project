@@ -222,13 +222,15 @@ MultivolumeBookTest >> testBookFromDictionaryWithYearObject [
 
 { #category : 'tests - creation' }
 MultivolumeBookTest >> testBookFromEmptyDictionaryUsesDefaults [
-    "Порожній словник дає книгу з назвою за замовчуванням, невідомим роком, без авторів і томів"
+    "Порожній словник дає книгу зі значеннями за замовчуванням: назва, поточний рік, автор і видавництво за замовчуванням, без томів"
     | created |
     created := MultivolumeBook bookFromDictionary: Dictionary new.
     self assert: created title equals: Book defaultTitle.
-    self assert: created year isNil.
-    self assert: created authors isEmpty.
-    self assert: created publishers isEmpty.
+    self assert: created year year equals: Book defaultYear year.
+    self assert: created authors size equals: 1.
+    self assert: created authors first lastName equals: Author defaultLastName.
+    self assert: created publishers size equals: 1.
+    self assert: created publishers first name equals: Publisher defaultName.
     self assert: created volumes isEmpty
 ]
 
@@ -411,22 +413,33 @@ MultivolumeBookTest >> testPlusReturnsReceiver [
 ]
 
 { #category : 'tests - printing' }
+MultivolumeBookTest >> testPrintString [
+    "Повний рядок: назва, автори, інформація про томи, рік, видавництва (через кому)"
+    self
+        assert: (self newBookWithVolumes: { volumeOne. volumeTwo. volumeThree }) printString
+        equals: 'Зібрання творів, Іван Франко, 3 томів (загалом 450 стор., 15 друк. арк.), 1976, Наукова думка'
+]
+
+{ #category : 'tests - printing' }
 MultivolumeBookTest >> testPrintStringOfEmptyBook [
-    "Порожній багатотомник друкується зі значеннями за замовчуванням і не викликає помилок"
+    "Порожній багатотомник друкується зі значеннями за замовчуванням (назва, автор, поточний рік, видавництво)"
     self
         assert: book printString
-        equals: 'Без назви, Невідомий автор, 0 томів (загалом 0 стор., 0 друк. арк.), Невідомий рік, Невідоме видавництво'
+        equals: Book defaultTitle, ', ', Author defaultAuthor fullName,
+            ', 0 томів (загалом 0 стор., 0 друк. арк.), ',
+            Book defaultYear year printString, ', ', Publisher defaultPublisher name
 ]
 
 { #category : 'tests - printing' }
 MultivolumeBookTest >> testPrintStringWithAuthorAndPublisher [
-    "Повний рядок: назва, автори, інформація про томи, рік, видавництва (рік тут не заданий)"
+    "Книга без заданого року друкує поточний рік; автор і видавництво замінюють значення за замовчуванням"
     book addAuthor: author.
     book addPublisher: publisher.
     book addVolume: volumeOne.
     self
         assert: book printString
-        equals: 'Без назви, Іван Франко, 1 томів (загалом 100 стор., 4 друк. арк.), Невідомий рік, Наукова думка'
+        equals: 'Без назви, Іван Франко, 1 томів (загалом 100 стор., 4 друк. арк.), ',
+            Book defaultYear year printString, ', Наукова думка'
 ]
 
 { #category : 'tests - printing' }

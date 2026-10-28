@@ -32,19 +32,18 @@ MultivolumeBook class >> authors: authorCollection title: titleString publishers
 { #category : 'instance creation' }
 MultivolumeBook class >> bookFromDictionary: aDictionary [
     "Створює багатотомник зі словника з ключами 'title', 'year', 'authors', 'publishers', 'volumes'.
-     Рік - Year, ціле число або рядок з числом (відсутній чи порожній рік означає «невідомий»).
-     Автори й видавництва - колекції екземплярів Author / Publisher.
-     Томи - колекція екземплярів Volume або словників."
-    | book title rawYear |
+     Рік - Year, ціле число або рядок з числом; відсутній чи порожній рік дає рік за замовчуванням.
+     Відсутні назва, автори чи видавництва замінюються значеннями за замовчуванням (це робить Book).
+     Томи - колекція екземплярів Volume або словників (див. Volume class >> volumeFromDictionary:).
+     Метод не викликає Book class >> bookFromDictionary:, бо той передає рік як є,
+     а Book >> year: приймає лише Year (або nil)"
+    | book rawYear |
     book := self new.
-    title := aDictionary at: 'title' ifAbsent: [ nil ].
-    book title: ((title isNil or: [ title isEmpty ])
-        ifTrue: [ self defaultTitle ]
-        ifFalse: [ title ]).
+    book title: (aDictionary at: 'title' ifAbsent: [ nil ]).
     rawYear := aDictionary at: 'year' ifAbsent: [ nil ].
-    (rawYear isNil or: [ rawYear isString and: [ rawYear isEmpty ] ]) ifFalse: [
-        book year: (self yearFrom: rawYear)
-    ].
+    book year: ((rawYear isNil or: [ rawYear isString and: [ rawYear isEmpty ] ])
+        ifTrue: [ nil ]
+        ifFalse: [ self yearFrom: rawYear ]).
     book authors: (OrderedCollection withAll: ((aDictionary at: 'authors' ifAbsent: [ nil ]) ifNil: [ #() ])).
     book publishers: (OrderedCollection withAll: ((aDictionary at: 'publishers' ifAbsent: [ nil ]) ifNil: [ #() ])).
     book volumes: (((aDictionary at: 'volumes' ifAbsent: [ nil ]) ifNil: [ #() ])
@@ -116,7 +115,11 @@ MultivolumeBook >> hasVolumeNumbered: anInteger [
 MultivolumeBook >> initialize [
     "Створює порожню колекцію томів (після ініціалізації полів Book)"
     super initialize.
-    volumes := OrderedCollection new
+    volumes := OrderedCollection new.
+    self title: nil.
+    self authors: nil.
+    self publishers: nil.
+    self year: nil
 ]
 
 { #category : 'copying' }
