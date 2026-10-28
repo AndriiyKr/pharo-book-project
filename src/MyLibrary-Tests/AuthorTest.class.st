@@ -1,112 +1,133 @@
 Class {
 	#name : 'AuthorTest',
 	#superclass : 'TestCase',
-	#instVars : [
-		'author'
-	],
 	#category : 'MyLibrary-Tests',
 	#package : 'MyLibrary-Tests'
 }
 
-{ #category : 'running' }
-AuthorTest >> setUp [
-    super setUp.
-    author := Author 
-        firstName: 'Іван' 
-        lastName: 'Франко' 
-        birthDate: (Date year: 1856 month: 8 day: 27) 
-        city: 'Нагуєвичі'.
+{ #category : 'tests' }
+AuthorTest >> testAuthorFromDictionary [
+    | dict author emptyDict emptyAuthor validDate |
+    validDate := Date year: 1871 month: 2 day: 25.
+
+    dict := Dictionary new.
+    dict at: 'firstName' put: 'Леся';
+         at: 'lastName' put: 'Українка';
+         at: 'birthDate' put: validDate;
+         at: 'city' put: 'Звягель'.
+         
+    author := Author authorFromDictionary: dict.
+    self assert: author firstName equals: 'Леся'.
+    self assert: author lastName equals: 'Українка'.
+    self assert: author birthDate equals: validDate.
+    self assert: author city equals: 'Звягель'.
+
+    emptyDict := Dictionary new.
+    emptyAuthor := Author authorFromDictionary: emptyDict.
+    
+    self assert: emptyAuthor firstName equals: Author defaultFirstName.
+    self assert: emptyAuthor lastName equals: Author defaultLastName.
+    self assert: emptyAuthor birthDate equals: Author defaultBirthDate.
+    self assert: emptyAuthor city equals: Author defaultCity.
 ]
 
 { #category : 'tests' }
-AuthorTest >> testAccessing [
-    self assert: author firstName equals: 'Іван'.
-    self assert: author lastName equals: 'Франко'.
-    self assert: author city equals: 'Нагуєвичі'.
-    self assert: author birthDate year equals: 1856.
-    self assert: author birthDate monthIndex equals: 8.
-]
+AuthorTest >> testBirthDate [
+    | author validDate |
+    author := Author new.
+    validDate := Date year: 1856 month: 8 day: 27.
 
-{ #category : 'tests' }
-AuthorTest >> testBirthDateTypeValidation [
-    | validDate |
-    self should: [ author birthDate: 1856 ] raise: Error.
-    self should: [ author birthDate: '1856-08-27' ] raise: Error.
-    validDate := Date today.
     author birthDate: validDate.
     self assert: author birthDate equals: validDate.
+
+    author birthDate: nil.
+    self assert: author birthDate equals: Author defaultBirthDate.
+
+    self should: [ author birthDate: '27-08-1856' ] raise: Error.
+    self should: [ author birthDate: 1856 ] raise: Error.
+]
+
+{ #category : 'tests' }
+AuthorTest >> testCity [
+    | author |
+    author := Author new.
+    
+    author city: 'Львів'.
+    self assert: author city equals: 'Львів'.
+    
+    author city: nil.
+    self assert: author city equals: Author defaultCity.
+    
+    author city: ''.
+    self assert: author city equals: Author defaultCity.
 ]
 
 { #category : 'tests' }
 AuthorTest >> testConstructor [
-    | newAuthor testDate |
-    testDate := Date year: 1930 month: 3 day: 19.
-    newAuthor := Author 
-        firstName: 'Ліна' 
-        lastName: 'Костенко' 
-        birthDate: testDate 
-        city: 'Ржищів'.
+    | author validDate |
+    validDate := Date year: 1814 month: 3 day: 9.
 
-    self assert: newAuthor firstName equals: 'Ліна'.
-    self assert: newAuthor lastName equals: 'Костенко'.
-    self assert: newAuthor birthDate equals: testDate.
-    self assert: newAuthor city equals: 'Ржищів'.
+    author := Author 
+        firstName: 'Тарас' 
+        lastName: 'Шевченко' 
+        birthDate: validDate 
+        city: 'Моринці'.
+        
+    self assert: author firstName equals: 'Тарас'.
+    self assert: author lastName equals: 'Шевченко'.
+    self assert: author birthDate equals: validDate.
+    self assert: author city equals: 'Моринці'.
+
+    author := Author firstName: nil lastName: nil birthDate: nil city: nil.
+    self assert: author firstName equals: Author defaultFirstName.
 ]
 
 { #category : 'tests' }
 AuthorTest >> testDefaultAuthor [
-    | defAuthor |
-    defAuthor := Author defaultAuthor.
+    | author |
+    author := Author defaultAuthor.
     
-    self assert: defAuthor firstName equals: Author defaultFirstName.
-    self assert: defAuthor lastName equals: Author defaultLastName.
-    self assert: defAuthor city equals: 'Невідоме місто'.
-    self assert: defAuthor birthDate equals: Date today.
+    self assert: author firstName equals: Author defaultFirstName.
+    self assert: author lastName equals: Author defaultLastName.
+    self assert: author birthDate equals: Author defaultBirthDate.
+    self assert: author city equals: Author defaultCity.
+]
+
+{ #category : 'tests' }
+AuthorTest >> testFirstName [
+    | author |
+    author := Author new.
+    author firstName: 'Іван'.
+    self assert: author firstName equals: 'Іван'.
+    author firstName: nil.
+    self assert: author firstName equals: Author defaultFirstName.
+    author firstName: ''.
+    self assert: author firstName equals: Author defaultFirstName.
 ]
 
 { #category : 'tests' }
 AuthorTest >> testFullName [
-    self assert: author fullName equals: 'Іван Франко'.
+    | author |
+    author := Author new.
+    
+    author firstName: 'Іван'; lastName: 'Нечуй-Левицький'.
+    self assert: author fullName equals: 'Іван Нечуй-Левицький'.
+    
+    author firstName: nil; lastName: nil.
+    self assert: author fullName equals: (Author defaultFirstName, ' ', Author defaultLastName).
 ]
 
 { #category : 'tests' }
-AuthorTest >> testFullNameWithMissingData [
-    | emptyAuthor partialAuthor |
-
-    emptyAuthor := Author new.
-    self assert: emptyAuthor fullName equals: 'Невідомий Автор'.
-
-    partialAuthor := Author new firstName: 'Леся'; yourself.
-    self assert: partialAuthor fullName equals: 'Леся Автор'.
-
-    partialAuthor := Author new lastName: 'Українка'; yourself.
-    self assert: partialAuthor fullName equals: 'Невідомий Українка'.
-]
-
-{ #category : 'tests' }
-AuthorTest >> testPrintOn [
-    | stream resultString |
-    stream := WriteStream on: String new.
-    author printOn: stream.
-    resultString := stream contents.
-    self assert: (resultString includesSubstring: 'Іван Франко').
-    self assert: (resultString includesSubstring: '(').
-    self assert: (resultString includesSubstring: ')').
-]
-
-{ #category : 'tests' }
-AuthorTest >> testSetters [
-    | blankAuthor testDate |
-    testDate := Date year: 1864 month: 9 day: 17.
-    blankAuthor := Author new.
-
-    blankAuthor firstName: 'Михайло'.
-    blankAuthor lastName: 'Коцюбинський'.
-    blankAuthor birthDate: testDate.
-    blankAuthor city: 'Вінниця'.
-
-    self assert: blankAuthor firstName equals: 'Михайло'.
-    self assert: blankAuthor lastName equals: 'Коцюбинський'.
-    self assert: blankAuthor birthDate equals: testDate.
-    self assert: blankAuthor city equals: 'Вінниця'.
+AuthorTest >> testLastName [
+    | author |
+    author := Author new.
+    
+    author lastName: 'Франко'.
+    self assert: author lastName equals: 'Франко'.
+    
+    author lastName: nil.
+    self assert: author lastName equals: Author defaultLastName.
+    
+    author lastName: ''.
+    self assert: author lastName equals: Author defaultLastName.
 ]

@@ -44,7 +44,7 @@ Author class >> defaultAuthor [
         firstName: self defaultFirstName 
         lastName: self defaultLastName 
         birthDate: Date today 
-        city: 'Невідоме місто'
+        city: self defaultCity.
 ]
 
 { #category : 'constants' }

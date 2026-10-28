@@ -43,25 +43,11 @@ Book class >> authors: authorCollection title: titleString publishers: publisher
 { #category : 'instance creation' }
 Book class >> bookFromDictionary: aDictionary [
     ^ self new
-        title: ((aDictionary at: 'title' ifAbsent: [ self defaultTitle ]) 
-            ifEmpty: [ self defaultTitle ]);
-        year: ((aDictionary at: 'year' ifAbsent: [ self defaultYearString ]) 
-            ifEmpty: [ self defaultYearString ]);
-        authors: ((aDictionary at: 'authors' ifAbsent: [ OrderedCollection new ]) 
-            ifEmpty: [ OrderedCollection new ]);
-        publishers: ((aDictionary at: 'publishers' ifAbsent: [ OrderedCollection new ]) 
-            ifEmpty: [ OrderedCollection new ]);
+        title: (aDictionary at: 'title' ifAbsent: [ nil ]);
+        year: (aDictionary at: 'year' ifAbsent: [ nil ]);
+        authors: (aDictionary at: 'authors' ifAbsent: [ nil ]);
+        publishers: (aDictionary at: 'publishers' ifAbsent: [ nil ]);
         yourself
-]
-
-{ #category : 'constants' }
-Book class >> defaultAuthorName [
-    ^ 'Невідомий автор'
-]
-
-{ #category : 'constants' }
-Book class >> defaultPublisherName [
-    ^ 'Невідоме видавництво'
 ]
 
 { #category : 'constants' }
@@ -70,8 +56,8 @@ Book class >> defaultTitle [
 ]
 
 { #category : 'constants' }
-Book class >> defaultYearString [
-    ^ 'Невідомий рік'
+Book class >> defaultYear [
+    ^ Year current
 ]
 
 { #category : 'constants' }
@@ -106,12 +92,18 @@ Book >> = aBook [
 
 { #category : 'initialization' }
 Book >> addAuthor: anAuthor [
-    authors add: anAuthor
+    authors ifNil: [ authors := OrderedCollection new ].
+    (authors size = 1 and: [ authors first lastName = Author defaultLastName ])
+        ifTrue: [ authors removeAll ].
+    authors addIfNotPresent: anAuthor
 ]
 
 { #category : 'initialization' }
 Book >> addPublisher: aPublisher [
-    publishers add: aPublisher
+    publishers ifNil: [ publishers := OrderedCollection new ].
+    (publishers size = 1 and: [ publishers first name = Publisher defaultName ])
+        ifTrue: [ publishers removeAll ].
+    publishers addIfNotPresent: aPublisher
 ]
 
 { #category : 'initialization' }
@@ -121,20 +113,16 @@ Book >> authors [
 
 { #category : 'initialization' }
 Book >> authors: aCollection [
-    authors := aCollection
+    authors := aCollection ifNil: [ OrderedCollection new ].
+    authors ifEmpty: [ 
+        authors add: Author defaultAuthor 
+    ]
 ]
 
 { #category : 'comparing' }
 Book >> hash [
     ^ (self title hash bitXor: self year hash) 
         bitXor: (self authors hash bitXor: self publishers hash)
-]
-
-{ #category : 'initialization' }
-Book >> initialize [
-    super initialize.
-    authors := OrderedCollection new.
-    publishers := OrderedCollection new.
 ]
 
 { #category : 'printing' }
@@ -187,8 +175,8 @@ Book >> printVolumeInfoOn: aStream [
 { #category : 'printing' }
 Book >> printYearOn: aStream [
     year 
-        ifNil: [ aStream nextPutAll: self class defaultYearString ]
-        ifNotNil: [ aStream nextPutAll: year year ]
+        ifNil: [ aStream nextPutAll: self class defaultYear year printString ]
+        ifNotNil: [ aStream nextPutAll: year year printString ]
 ]
 
 { #category : 'calculations' }
@@ -203,7 +191,10 @@ Book >> publishers [
 
 { #category : 'initialization' }
 Book >> publishers: aCollection [
-    publishers := aCollection
+    publishers := aCollection ifNil: [ OrderedCollection new ].
+    publishers ifEmpty: [ 
+        publishers add: Publisher defaultPublisher 
+    ]
 ]
 
 { #category : 'initialization' }
@@ -213,7 +204,8 @@ Book >> title [
 
 { #category : 'initialization' }
 Book >> title: aString [
-    title := aString
+    title := (aString ifNil: [ self class defaultTitle ]) 
+        ifEmpty: [ self class defaultTitle ]
 ]
 
 { #category : 'calculations' }
@@ -229,8 +221,10 @@ Book >> year [
 
 { #category : 'initialization' }
 Book >> year: aYear [
-    (aYear isKindOf: Year) ifFalse: [ 
-        self error: 'Помилка: параметр має бути екземпляром Year!' 
+    | finalYear |
+    finalYear := aYear ifNil: [ self class defaultYear ].
+    (finalYear isKindOf: Year) ifFalse: [ 
+        self error: 'Помилка: year має бути екземпляром Year!' 
     ].
-    year := aYear
+    year := finalYear
 ]

@@ -57,12 +57,12 @@ Library >> addBook: aBook [
 
 { #category : 'ui-dialogs' }
 Library >> addBookViaDialog [
-	"Інтерфейс діалогу з користувачем для створення книг різних типів"
-	| choices bookType titleStr yearStr authorFirst authorLast pubName newBook newAuthor newPublisher pagesStr illusStr volCountStr volPagesStr |
+	"Інтерфейс діалогу з користувачем для створення книг різних типів із підтримкою декількох авторів"
+	| choices bookType titleStr yearStr pubName newBook newPublisher pagesStr illusStr volCountStr volPagesStr authorsList addMore authorFirst authorLast |
 	
 	choices := { 'Однотомник' . 'Монографія' . 'Багатотомник' }.
 	bookType := UIManager default chooseFrom: choices title: 'Оберіть тип книги:'.
-	bookType = 0 ifTrue: [ ^ self ]. "Користувач скасував вибір"
+	bookType = 0 ifTrue: [ ^ self ].
 	
 	titleStr := UIManager default request: 'Введіть назву книги:' initialAnswer: 'Нова книга'.
 	titleStr ifNil: [ ^ self ].
@@ -70,16 +70,22 @@ Library >> addBookViaDialog [
 	yearStr := UIManager default request: 'Введіть рік видання:' initialAnswer: '2023'.
 	yearStr ifNil: [ ^ self ].
 	
-	authorFirst := UIManager default request: 'Введіть ім''я автора:' initialAnswer: 'Тарас'.
-	authorFirst ifNil: [ ^ self ].
-	
-	authorLast := UIManager default request: 'Введіть прізвище автора:' initialAnswer: 'Шевченко'.
-	authorLast ifNil: [ ^ self ].
+	authorsList := OrderedCollection new.
+	addMore := true.
+	[ addMore ] whileTrue: [
+		authorFirst := UIManager default request: 'Введіть ім''я автора:' initialAnswer: 'Тарас'.
+		authorFirst ifNotNil: [
+			authorLast := UIManager default request: 'Введіть прізвище автора:' initialAnswer: 'Шевченко'.
+			authorLast ifNotNil: [
+				authorsList add: (Author new firstName: authorFirst; lastName: authorLast).
+				addMore := UIManager default confirm: 'Бажаєте додати ще одного автора?'.
+			] ifNil: [ addMore := false ]
+		] ifNil: [ addMore := false ]
+	].
+	authorsList ifEmpty: [ ^ self ]. "Припиняємо створення, якщо не додано жодного автора"
 	
 	pubName := UIManager default request: 'Введіть назву видавництва:' initialAnswer: 'А-БА-БА-ГА-ЛА-МА-ГА'.
 	pubName ifNil: [ ^ self ].
-	
-	newAuthor := Author new firstName: authorFirst; lastName: authorLast.
 	newPublisher := Publisher new name: pubName.
 	
 	bookType = 1 ifTrue: [
@@ -107,12 +113,9 @@ Library >> addBookViaDialog [
 		].
 	].
 	
-	newBook
-		title: titleStr;
-		year: (Year year: yearStr asInteger);
-		addAuthor: newAuthor;
-		addPublisher: newPublisher.
-		
+	newBook title: titleStr; year: (Year year: yearStr asInteger); addPublisher: newPublisher.
+	authorsList do: [ :eachAuthor | newBook addAuthor: eachAuthor ].
+	
 	self addBook: newBook.
 	UIManager default inform: 'Книгу "', titleStr, '" успішно додано до бібліотеки!'
 ]
