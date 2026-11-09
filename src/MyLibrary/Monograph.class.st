@@ -40,8 +40,8 @@ Monograph >> illustrationCount [
 
 { #category : 'accessing' }
 Monograph >> illustrationCount: anInteger [
-    anInteger < 0 ifTrue: [ 
-        self error: 'Помилка: Кількість ілюстрацій не може бути від’ємною!' 
+    (anInteger isInteger and: [ anInteger > 0 ]) ifFalse: [
+        self error: 'Помилка: Кількість ілюстрацій має бути додатним числом!'
     ].
     illustrationCount := anInteger
 ]
