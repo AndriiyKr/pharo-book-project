@@ -40,8 +40,8 @@ SingleVolumeBook >> pageCount [
 
 { #category : 'accessing' }
 SingleVolumeBook >> pageCount: anInteger [
-    anInteger > 0 ifFalse: [ 
-        self error: 'Помилка: Кількість сторінок має бути додатним числом!' 
+    (anInteger isInteger and: [ anInteger > 0 ]) ifFalse: [
+        self error: 'Помилка: Кількість сторінок має бути додатним числом!'
     ].
     pageCount := anInteger
 ]
