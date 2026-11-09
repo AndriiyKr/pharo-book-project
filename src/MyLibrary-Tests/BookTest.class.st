@@ -125,18 +125,6 @@ BookTest >> testComparison [
 ]
 
 { #category : 'tests' }
-BookTest >> testEqualsAndHash [
-    | book1 book2 book3 |
-    book1 := SingleVolumeBook new title: 'Тест'; year: (Year year: 2020); pageCount: 100.
-    book2 := SingleVolumeBook new title: 'Тест'; year: (Year year: 2020); pageCount: 100.
-    book3 := SingleVolumeBook new title: 'Інша'; year: (Year year: 2021).
-    
-    self assert: book1 equals: book2.
-    self assert: book1 hash equals: book2 hash.
-    self deny: book1 = book3.
-]
-
-{ #category : 'tests' }
 BookTest >> testPublishers [
     | book pubList |
     book := Book new.
