@@ -125,6 +125,15 @@ Book >> hash [
         bitXor: (self authors hash bitXor: self publishers hash)
 ]
 
+{ #category : 'initialization' }
+Book >> initialize [
+    super initialize.
+    title := self class defaultTitle.
+    year := self class defaultYear.
+    self authors: nil.
+    self publishers: nil.
+]
+
 { #category : 'printing' }
 Book >> printAuthorsOn: aStream [
     authors isEmpty 

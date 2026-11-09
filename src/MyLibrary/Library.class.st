@@ -31,12 +31,18 @@ Class {
 	#name : 'Library',
 	#superclass : 'Object',
 	#instVars : [
+		'name',
 		'books'
 	],
 	#category : 'MyLibrary-container',
 	#package : 'MyLibrary',
 	#tag : 'container'
 }
+
+{ #category : 'accessing - defaults' }
+Library class >> defaultName [
+    ^ 'Моя бібліотека'
+]
 
 { #category : 'instance creation' }
 Library class >> withBooks: aCollectionOfBooks [
@@ -137,6 +143,24 @@ Library >> booksByAuthor: anAuthor [
 	^ books select: [ :eachBook | eachBook authors includes: anAuthor ]
 ]
 
+{ #category : 'queries' }
+Library >> booksByPublisher: aPublisher [
+    "Пошук продукції певного видавництва"
+    ^ books select: [ :eachBook | eachBook publishers includes: aPublisher ]
+]
+
+{ #category : 'queries' }
+Library >> booksByYear: aYear [
+    "Пошук книг певного року видання"
+    ^ books select: [ :eachBook | eachBook year = aYear ]
+]
+
+{ #category : 'statistics' }
+Library >> copiesOf: aBook [
+    "Кількість копій конкретної книги"
+    ^ (books select: [ :each | each = aBook ]) size
+]
+
 { #category : 'file-io' }
 Library >> exportToText: aFileName [
     "Зберігає текстове представлення бібліотеки у файл"
@@ -147,14 +171,15 @@ Library >> exportToText: aFileName [
 
 { #category : 'initialization' }
 Library >> initialize [
-	super initialize.
-	books := OrderedCollection new.
+    super initialize.
+    name := self class defaultName.
+    books := OrderedCollection new.
 ]
 
 { #category : 'queries' }
 Library >> largestBook [
 	"Повертає книгу з найбільшим загальним обсягом (totalVolume)"
-	books ifEmpty: [ ^ nil ].
+	books ifEmpty: [ ^ 0 ].
 	
 	^ books inject: books first into: [ :maxBook :eachBook |
 		eachBook totalVolume > maxBook totalVolume
@@ -169,6 +194,17 @@ Library >> loadFromSTON: aFileName [
     aFileName asFileReference readStreamDo: [ :stream |
         books := STON fromStream: stream.
     ]
+]
+
+{ #category : 'accessing' }
+Library >> name [
+    ^ name
+]
+
+{ #category : 'accessing' }
+Library >> name: aString [
+    name := (aString ifNil: [ self class defaultName ]) 
+        ifEmpty: [ self class defaultName ]
 ]
 
 { #category : 'printing' }
@@ -187,11 +223,30 @@ Library >> printAllBooksOn: aStream [
 ]
 
 { #category : 'printing' }
+Library >> printBooksByYear: aYear on: aStream [
+    "Виводить інформацію про певну категорію книг (за роком)"
+    | filtered |
+    filtered := self booksByYear: aYear.
+    aStream 
+        nextPutAll: '--- Книги ';
+        print: aYear year;
+        nextPutAll: ' року (';
+        print: filtered size;
+        nextPutAll: ' шт.) ---';
+        cr.
+        
+    filtered do: [ :each | 
+        each printOn: aStream. 
+        aStream cr.
+    ]
+]
+
+{ #category : 'printing' }
 Library >> printOn: aStream [
-	super printOn: aStream.
-	aStream nextPutAll: ' ('.
-	aStream nextPutAll: books size printString.
-	aStream nextPutAll: ' книг)'
+    super printOn: aStream.
+    aStream nextPutAll: ' "'; nextPutAll: self name; nextPutAll: '" ('.
+    aStream print: self totalCopies.
+    aStream nextPutAll: ' примірників)'
 ]
 
 { #category : 'adding/removing' }
@@ -200,10 +255,58 @@ Library >> removeBook: aBook [
 	books remove: aBook ifAbsent: [ self error: 'Книгу не знайдено у бібліотеці' ]
 ]
 
+{ #category : 'adding/removing' }
+Library >> replaceBook: oldBook with: newBook [
+    "Змінює всі екземпляри застарілого видання на новіше"
+    | copiesCount |
+    copiesCount := self copiesOf: oldBook.
+    copiesCount = 0 ifTrue: [ ^ self error: 'Старе видання не знайдено!' ].
+    
+    books removeAllSuchThat: [ :each | each = oldBook ].
+    copiesCount timesRepeat: [ self addBook: newBook ].
+]
+
+{ #category : 'ui-dialogs' }
+Library >> reviewOldBooks: aYear [
+    "Запит до власника щодо вилучення або заміни старих книг"
+    | oldBooks toRemove promptText summaryText |
+    
+    oldBooks := books select: [ :each | each year < aYear ].
+    
+    oldBooks ifEmpty: [ 
+        UIManager default inform: ('Немає книг, виданих до {1}' format: { aYear year }).
+        ^ self 
+    ].
+
+    toRemove := oldBooks asSet select: [ :eachBook |
+        promptText := 'Книга "{1}" ({2}) застаріла. Вилучити всі її примірники ({3} шт.)?' 
+            format: { eachBook title . eachBook year year . self copiesOf: eachBook }.
+        UIManager default confirm: promptText
+    ].
+
+    books removeAllSuchThat: [ :each | toRemove includes: each ].
+
+    summaryText := 'Огляд завершено. Вилучено найменувань: {1}' format: { toRemove size }.
+    UIManager default inform: summaryText.
+]
+
 { #category : 'file-io' }
 Library >> saveToSTON: aFileName [
     "Серіалізує всі об'єкти"
     aFileName asFileReference writeStreamDo: [ :stream |
         STON put: books onStreamPretty: stream.
     ]
+]
+
+{ #category : 'statistics' }
+Library >> totalCopies [
+    "Загальна кількість примірників у бібліотеці"
+    ^ books size
+]
+
+{ #category : 'statistics' }
+Library >> totalPrintedSheets [
+    "Сумарна кількість друкованих аркушів усіх книг"
+    books ifEmpty: [ ^ 0 ].
+    ^ books sumNumbers: [ :each | each printedSheets ]
 ]
