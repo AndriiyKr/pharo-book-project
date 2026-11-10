@@ -114,7 +114,7 @@ LibraryPresenter >> loadFromFile [
 { #category : 'actions' }
 LibraryPresenter >> openAddBookDialog [
     | dialog |
-    dialog := BookDialogPresenter new.
+    dialog := BookDialogPresenter on: library. 
     dialog openModal.
     dialog book ifNotNil: [ :newBook |
         library addBook: newBook.
@@ -209,10 +209,8 @@ LibraryPresenter >> updateUI [
 
 { #category : 'actions' }
 LibraryPresenter >> viewSelectedBook [
-    | selected infoString |
+    | selected |
     selected := booksTable selection selectedItem.
     selected ifNil: [ ^ UIManager default alert: 'Оберіть книгу для перегляду!' ].
-    
-    infoString := String streamContents: [ :stream | selected printOn: stream ].
-    UIManager default longMessage: infoString title: 'Детальна інформація про книгу'.
+    (BookInfoPresenter on: selected) open.
 ]
