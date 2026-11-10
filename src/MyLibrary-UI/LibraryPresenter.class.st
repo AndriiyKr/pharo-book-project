@@ -6,6 +6,11 @@ Class {
 		'booksTable',
 		'addButton',
 		'removeButton',
+		'viewButton',
+		'searchAuthorButton',
+		'searchYearButton',
+		'resetButton',
+		'replaceButton',
 		'saveFileButton',
 		'loadFileButton',
 		'saveDbButton',
@@ -19,29 +24,40 @@ Class {
 LibraryPresenter >> connectPresenters [
     addButton action: [ self openAddBookDialog ].
     removeButton action: [ self removeSelectedBook ].
+    viewButton action: [ self viewSelectedBook ].
     
-		"Олег тут також зміниш!!!"
-    saveFileButton action: [ UIManager default inform: 'Тут буде діалог збереження у файл (STON/TXT)' ].
-    loadFileButton action: [ UIManager default inform: 'Тут буде діалог відкриття файлу' ].
-    saveDbButton action: [ UIManager default inform: 'Тут буде підключення до MongoDB (Voyage)' ].
+    searchAuthorButton action: [ self searchByAuthor ].
+    searchYearButton action: [ self searchByYear ].
+    resetButton action: [ self updateUI ].
+    
+    replaceButton action: [ self reviewOldBooks ].
+    saveFileButton action: [ self saveToFile ].
+    loadFileButton action: [ self loadFromFile ].
+    saveDbButton action: [ self saveToDatabase ].
 ]
 
 { #category : 'layout' }
 LibraryPresenter >> defaultLayout [
-    | toolbarLayout |
-    toolbarLayout := SpBoxLayout newLeftToRight
+    | topBar bottomBar |
+    topBar := SpBoxLayout newLeftToRight
         spacing: 5;
-        add: addButton; 
-        add: removeButton;
-        add: saveFileButton; 
-        add: loadFileButton; 
-        add: saveDbButton;
+        add: addButton; add: removeButton; add: viewButton;
+        add: ' | ' asPresenter width: 20;
+        add: searchAuthorButton; add: searchYearButton; add: resetButton;
+        yourself.
+        
+    bottomBar := SpBoxLayout newLeftToRight
+        spacing: 5;
+        add: replaceButton;
+        add: ' | ' asPresenter width: 20;
+        add: saveFileButton; add: loadFileButton; add: saveDbButton;
         yourself.
         
     ^ SpBoxLayout newTopToBottom
         spacing: 5;
-        add: toolbarLayout expand: false;
+        add: topBar expand: false;
         add: booksTable;
+        add: bottomBar expand: false;
         add: statusBar expand: false;
         yourself
 ]
@@ -52,16 +68,25 @@ LibraryPresenter >> initializePresenters [
     booksTable 
         addColumn: (SpStringTableColumn title: 'Назва' evaluated: [ :each | each title ]);
         addColumn: (SpStringTableColumn title: 'Рік' evaluated: [ :each | each year year asString ]);
+        addColumn: (SpStringTableColumn title: 'Автори' evaluated: [ :each | 
+            String streamContents: [ :s | each printAuthorsOn: s ] ]);
         addColumn: (SpStringTableColumn title: 'Тип' evaluated: [ :each | each class name ]);
         addColumn: (SpStringTableColumn title: 'Обсяг' evaluated: [ :each | each totalVolume asString ]).
         
-    addButton := self newButton label: 'Додати книгу'; iconName: #smallAdd.
+    "Верхня панель (керування та пошук)"
+    addButton := self newButton label: 'Додати'; iconName: #smallAdd.
     removeButton := self newButton label: 'Видалити'; iconName: #smallDelete.
+    viewButton := self newButton label: 'Переглянути'; iconName: #smallFind.
     
-    "Ініціалізація кнопок файлів/БД (Олег зміни це бо тут заглушки!!!)"
-    saveFileButton := self newButton label: 'Зберегти у файл'; iconName: #smallSave.
-    loadFileButton := self newButton label: 'Завантажити'; iconName: #smallOpen.
-    saveDbButton := self newButton label: 'В базу даних'; iconName: #smallDatabase.
+    searchAuthorButton := self newButton label: 'Пошук автора'; iconName: #smallSearch.
+    searchYearButton := self newButton label: 'Пошук за роком'; iconName: #smallSearch.
+    resetButton := self newButton label: 'Скинути фільтр'; iconName: #smallUpdate.
+    
+    "Нижня панель (дані)"
+    replaceButton := self newButton label: 'Ревізія старих книг'; iconName: #smallQuestion.
+    saveFileButton := self newButton label: 'Зберегти (STON)'; iconName: #smallSave.
+    loadFileButton := self newButton label: 'Відкрити (STON)'; iconName: #smallOpen.
+    saveDbButton := self newButton label: 'Зберегти в БД'; iconName: #smallDatabase.
     
     statusBar := self newLabel.
     self updateUI.
@@ -70,9 +95,20 @@ LibraryPresenter >> initializePresenters [
 { #category : 'accessing - model' }
 LibraryPresenter >> initializeWindow: aWindowPresenter [
     aWindowPresenter
-        title: (library name ifNil: [ 'Моя Бібліотека' ]);
-        initialExtent: 800@500;
+        title: (library name ifNil: [ 'Сучасна Бібліотека' ]);
+        initialExtent: 950@550;
         windowIcon: (self iconNamed: #book).
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> loadFromFile [
+    | fileRef |
+    fileRef := UIManager default chooseExistingFileReference: 'Відкрити бібліотеку' extensions: #('ston') path: ''.
+    fileRef ifNotNil: [
+        library loadFromSTON: fileRef.
+        self updateUI.
+        UIManager default inform: 'Бібліотеку успішно завантажено!'.
+    ].
 ]
 
 { #category : 'actions' }
@@ -96,6 +132,69 @@ LibraryPresenter >> removeSelectedBook [
     ].
 ]
 
+{ #category : 'actions' }
+LibraryPresenter >> reviewOldBooks [
+    | yearStr year |
+    yearStr := UIManager default request: 'Введіть рік. Усі книги, видані ДО цього року, будуть запропоновані до списання:'.
+    (yearStr isNil or: [ yearStr isEmpty ]) ifTrue: [ ^ self ].
+    
+    year := yearStr asInteger.
+    year ifNotNil: [
+        library reviewOldBooks: (Year year: year).
+        self updateUI.
+    ].
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> saveToDatabase [
+    "Змінити тут!!"
+    [ 
+        library save. 
+        UIManager default inform: 'Успішно синхронізовано з базою даних!' 
+    ] on: Error do: [ :err | 
+        UIManager default alert: 'Помилка підключення до БД (перевірте налаштування Voyage): ', err messageText 
+    ].
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> saveToFile [
+    | fileRef |
+    fileRef := UIManager default chooseForSaveFileReference: 'Зберегти бібліотеку' extensions: #('ston') path: 'library.ston'.
+    fileRef ifNotNil: [
+        library saveToSTON: fileRef.
+        UIManager default inform: 'Бібліотеку успішно збережено у файл!'.
+    ].
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> searchByAuthor [
+    | searchStr filtered |
+    searchStr := UIManager default request: 'Введіть фрагмент імені або прізвища автора:'.
+    (searchStr isNil or: [ searchStr isEmpty ]) ifTrue: [ ^ self ].
+    
+    filtered := library books select: [ :book | 
+        book authors anySatisfy: [ :author | 
+            author fullName includesSubstring: searchStr caseSensitive: false ] 
+    ].
+    
+    booksTable items: filtered asArray.
+    statusBar label: ('Пошук: знайдено {1} книг' format: { filtered size }).
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> searchByYear [
+    | yearStr year filtered |
+    yearStr := UIManager default request: 'Введіть рік видання (наприклад, 2024):'.
+    (yearStr isNil or: [ yearStr isEmpty ]) ifTrue: [ ^ self ].
+    
+    year := yearStr asInteger.
+    year ifNil: [ ^ UIManager default alert: 'Будь ласка, введіть коректне число!' ].
+    
+    filtered := library booksByYear: (Year year: year).
+    booksTable items: filtered asArray.
+    statusBar label: ('Пошук: знайдено {1} книг' format: { filtered size }).
+]
+
 { #category : 'initialization' }
 LibraryPresenter >> setModelBeforeInitialization: aLibrary [
     library := aLibrary.
@@ -106,4 +205,14 @@ LibraryPresenter >> updateUI [
     booksTable items: library books asArray.
     statusBar label: ('Всього примірників: {1} | Загальний обсяг друк. аркушів: {2}' 
         format: { library totalCopies . library totalPrintedSheets }).
+]
+
+{ #category : 'actions' }
+LibraryPresenter >> viewSelectedBook [
+    | selected infoString |
+    selected := booksTable selection selectedItem.
+    selected ifNil: [ ^ UIManager default alert: 'Оберіть книгу для перегляду!' ].
+    
+    infoString := String streamContents: [ :stream | selected printOn: stream ].
+    UIManager default longMessage: infoString title: 'Детальна інформація про книгу'.
 ]

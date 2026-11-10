@@ -3,7 +3,7 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'typeDropList',
-		'itleInput',
+		'titleInput',
 		'yearInput',
 		'pagesInput',
 		'illusInput',
@@ -19,7 +19,7 @@ BookDialogPresenter >> book [
     ^ book
 ]
 
-{ #category : 'connections' }
+{ #category : 'initialization' }
 BookDialogPresenter >> connectPresenters [
     typeDropList whenSelectedItemChangedDo: [ :selectedClass |
         selectedClass = Monograph 
@@ -28,7 +28,7 @@ BookDialogPresenter >> connectPresenters [
             
         selectedClass = MultivolumeBook
             ifTrue: [ pagesInput disable; text: '0' ]
-            ifFalse: [ pagesInput enable ].
+            ifFalse: [ pagesInput enable; text: '' ].
     ].
 
     saveButton action: [ self processForm ].
@@ -36,9 +36,8 @@ BookDialogPresenter >> connectPresenters [
 
 { #category : 'layout' }
 BookDialogPresenter >> defaultLayout [
-    | titleInput |
-^ SpBoxLayout newTopToBottom
-        spacing: 10; margin: 10;
+    ^ SpBoxLayout newTopToBottom
+        spacing: 10;
         add: 'Тип видання:' asPresenter expand: false;
         add: typeDropList expand: false;
         add: 'Назва книги:' asPresenter expand: false;
@@ -53,23 +52,22 @@ BookDialogPresenter >> defaultLayout [
         yourself
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 BookDialogPresenter >> initializePresenters [
-    | titleInput |
-typeDropList := self newDropList.
+    typeDropList := self newDropList.
     typeDropList items: { SingleVolumeBook . Monograph . MultivolumeBook };
                  display: [ :class | class name ].
+                 
     titleInput := self newTextInput placeholder: 'Введіть назву'.
-    yearInput := self newNumberInput.
-    pagesInput := self newNumberInput.
-    illusInput := self newNumberInput.
+    yearInput := self newNumberInput placeholder: '2024'.
+    pagesInput := self newNumberInput placeholder: 'Кількість сторінок'.
+    illusInput := self newNumberInput placeholder: 'Тільки для монографій'.
     
     saveButton := self newButton label: 'Створити книгу'; iconName: #smallOk.
-    
     illusInput disable.
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 BookDialogPresenter >> initializeWindow: aWindowPresenter [
     aWindowPresenter
         title: 'Створення нової книги';
@@ -78,7 +76,7 @@ BookDialogPresenter >> initializeWindow: aWindowPresenter [
 
 { #category : 'connections' }
 BookDialogPresenter >> processForm [
-    | type newBook titleInput |
+    | type newBook |
     titleInput text isEmpty ifTrue: [ ^ UIManager default alert: 'Назва не може бути порожньою!' ].
     
     type := typeDropList selectedItem.
