@@ -77,6 +77,17 @@ Author class >> firstName: aFirstName lastName: aLastName birthDate: aDate city:
         yourself
 ]
 
+{ #category : 'comparing' }
+Author >> = anObject [
+    "Порівнюємо авторів за трьома існуючими полями"
+    self == anObject ifTrue: [ ^ true ].
+    self class = anObject class ifFalse: [ ^ false ].
+    
+    ^ self firstName = anObject firstName 
+        and: [ self lastName = anObject lastName 
+        and: [ self birthDate = anObject birthDate ] ]
+]
+
 { #category : 'accessing' }
 Author >> birthDate [
     ^ birthDate
@@ -118,6 +129,12 @@ Author >> firstName: aString [
 Author >> fullName [
     "Повертає повне ім'я автора"
     ^ (firstName ifNil: [ self class defaultFirstName ]), ' ', (lastName ifNil: [ self class defaultLastName ])
+]
+
+{ #category : 'comparing' }
+Author >> hash [
+    "Хеш повинен залежати від тих самих полів, що й метод ="
+    ^ (self firstName hash bitXor: self lastName hash) bitXor: self birthDate hash
 ]
 
 { #category : 'initialization' }
