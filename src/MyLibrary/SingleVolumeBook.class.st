@@ -50,7 +50,7 @@ SingleVolumeBook >> - aNumber [
     ^ self
 ]
 
-{ #category : 'accessing' }
+{ #category : 'initialization' }
 SingleVolumeBook >> initialize [
     super initialize.
     self pageCount: nil.
