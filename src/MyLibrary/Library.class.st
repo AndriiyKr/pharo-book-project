@@ -39,9 +39,40 @@ Class {
 	#tag : 'container'
 }
 
+{ #category : 'voyage' }
+Library class >> connectToMongoDB [
+    | repository |
+    "Налаштування прямого підключення до конкретного вузла кластера MongoDB Atlas"
+    repository := VOMongoRepository 
+        host: 'testcluster-shard-00-00.nry8neg.mongodb.net' 
+        port: 27017
+        database: 'MyLibraryDB' 
+        username: 'opalyukh_db_user' 
+        password: 'PVBjm12BdZVcJjAP'.
+    repository enableSingleton.
+]
+
+{ #category : 'voyage' }
+Library class >> connectToMongoDB: aHostString [
+    | repository |
+    "Підключення до бази даних MongoDB за вказаною адресою (наприклад, локальною)"
+    repository := VOMongoRepository host: aHostString database: 'MyLibraryDB'.
+    repository enableSingleton.
+]
+
 { #category : 'accessing - defaults' }
 Library class >> defaultName [
     ^ 'Моя бібліотека'
+]
+
+{ #category : 'voyage' }
+Library class >> isVoyageRoot [
+    ^ true
+]
+
+{ #category : 'voyage' }
+Library class >> loadFromDatabase: aName [
+    ^ self selectOne: [ :each | each name = aName ]
 ]
 
 { #category : 'file-io' }
@@ -49,6 +80,13 @@ Library class >> loadFromStoreString: aFileName [
     | fileContents |
     fileContents := aFileName asFileReference contents.
     ^ self compiler evaluate: fileContents.
+]
+
+{ #category : 'voyage' }
+Library class >> useInMemoryDatabase [
+    | repository |
+    repository := VOMemoryRepository new.
+    repository enableSingleton.
 ]
 
 { #category : 'instance creation' }
@@ -295,6 +333,11 @@ Library >> reviewOldBooks: aYear [
 
     summaryText := 'Огляд завершено. Вилучено найменувань: {1}' format: { toRemove size }.
     UIManager default inform: summaryText.
+]
+
+{ #category : 'voyage' }
+Library >> saveToDatabase [
+    self save.
 ]
 
 { #category : 'file-io' }

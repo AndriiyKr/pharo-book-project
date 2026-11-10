@@ -15,6 +15,15 @@ LibraryStorageTest >> setUp [
     library := Library new name: 'Тестова БД'.
     library addBook: (SingleVolumeBook new title: 'Тест Книга'; pageCount: 100).
     library addBook: (Monograph new title: 'Монографія'; pageCount: 200; illustrationCount: 20).
+    
+    oldRepository := VORepository current.
+    Library useInMemoryDatabase.
+]
+
+{ #category : 'running' }
+LibraryStorageTest >> tearDown [
+    VORepository setRepository: oldRepository.
+    super tearDown.
 ]
 
 { #category : 'tests' }
@@ -59,4 +68,15 @@ LibraryStorageTest >> testStoreStringSerialization [
     self assert: loadedLibrary name equals: library name.
     
     testFile ensureDelete.
+]
+
+{ #category : 'tests' }
+LibraryStorageTest >> testVoyageSaveAndLoad [
+    | loadedLib |
+    library saveToDatabase.
+    loadedLib := Library loadFromDatabase: 'Тестова БД'.
+    
+    self assert: loadedLib notNil.
+    self assert: loadedLib books size equals: library books size.
+    self assert: loadedLib books first title equals: 'Тест Книга'.
 ]
