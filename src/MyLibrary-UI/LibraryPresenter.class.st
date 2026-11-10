@@ -14,6 +14,7 @@ Class {
 		'saveFileButton',
 		'loadFileButton',
 		'saveDbButton',
+		'loadDbButton',
 		'statusBar'
 	],
 	#category : 'MyLibrary-UI',
@@ -34,6 +35,8 @@ LibraryPresenter >> connectPresenters [
     saveFileButton action: [ self saveToFile ].
     loadFileButton action: [ self loadFromFile ].
     saveDbButton action: [ self saveToDatabase ].
+	 loadDbButton action: [ self loadFromDatabase ].
+
 ]
 
 { #category : 'layout' }
@@ -50,7 +53,7 @@ LibraryPresenter >> defaultLayout [
         spacing: 5;
         add: replaceButton;
         add: ' | ' asPresenter width: 20;
-        add: saveFileButton; add: loadFileButton; add: saveDbButton;
+        add: saveFileButton; add: loadFileButton; add: saveDbButton; add: loadDbButton;
         yourself.
         
     ^ SpBoxLayout newTopToBottom
@@ -64,6 +67,8 @@ LibraryPresenter >> defaultLayout [
 
 { #category : 'accessing - model' }
 LibraryPresenter >> initializePresenters [
+	 VORepository current ifNil: [ Library useInMemoryDatabase ].
+	 library := Library new.
     booksTable := self newTable.
     booksTable 
         addColumn: (SpStringTableColumn title: 'Назва' evaluated: [ :each | each title ]);
@@ -84,9 +89,10 @@ LibraryPresenter >> initializePresenters [
     
     "Нижня панель (дані)"
     replaceButton := self newButton label: 'Ревізія старих книг'; iconName: #smallQuestion.
-    saveFileButton := self newButton label: 'Зберегти (STON)'; iconName: #smallSave.
-    loadFileButton := self newButton label: 'Відкрити (STON)'; iconName: #smallOpen.
+    saveFileButton := self newButton label: 'Зберегти у файл'; iconName: #smallSave.
+    loadFileButton := self newButton label: 'Відкрити з файлу'; iconName: #smallOpen.
     saveDbButton := self newButton label: 'Зберегти в БД'; iconName: #smallDatabase.
+	 loadDbButton := self newButton label: 'Відкрити з БД'; iconName: #smallOpen.
     
     statusBar := self newLabel.
     self updateUI.
@@ -101,14 +107,49 @@ LibraryPresenter >> initializeWindow: aWindowPresenter [
 ]
 
 { #category : 'actions' }
+LibraryPresenter >> loadFromDatabase [
+    | targetName loadedLib |
+    
+    targetName := UIManager default 
+        request: 'Введіть назву бібліотеки для завантаження з БД:' 
+        initialAnswer: (library name ifNil: [ 'Моя бібліотека' ]).
+        
+    targetName isEmptyOrNil ifTrue: [ ^ self ].
+    
+    "Шукаємо бібліотеку в пам'яті Voyage за введеною назвою"
+    loadedLib := Library loadFromDatabase: targetName.
+    
+    loadedLib 
+        ifNotNil: [ 
+            library := loadedLib.
+            self updateUI. 
+            UIManager default inform: 'Бібліотеку "', targetName, '" успішно завантажено з БД!' ]
+        ifNil: [ 
+            UIManager default alert: 'Помилка: Бібліотеку з назвою "', targetName, '" не знайдено в БД!' ].
+]
+
+{ #category : 'actions' }
 LibraryPresenter >> loadFromFile [
-    | fileRef |
-    fileRef := UIManager default chooseExistingFileReference: 'Відкрити бібліотеку' extensions: #('ston') path: ''.
-    fileRef ifNotNil: [
-        library loadFromSTON: fileRef.
-        self updateUI.
-        UIManager default inform: 'Бібліотеку успішно завантажено!'.
-    ].
+    | formatIndex fileName |
+    "Запитуємо формат (без експорту тексту, бо ми його не зчитуємо)"
+    formatIndex := UIManager default 
+        chooseFrom: #('STON' 'StoreString') 
+        title: 'Оберіть формат завантаження:'.
+        
+    formatIndex = 0 ifTrue: [ ^ self ]. 
+    
+    fileName := UIManager default request: 'Введіть ім''я файлу:' initialAnswer: 'library_data'.
+    fileName isEmptyOrNil ifTrue: [ ^ self ].
+    
+    "Виконуємо завантаження залежно від вибору"
+    formatIndex = 1 ifTrue: [ 
+        library := Library new.
+        library loadFromSTON: fileName, '.ston' ].
+    formatIndex = 2 ifTrue: [ 
+        library := Library loadFromStoreString: fileName, '.txt' ].
+    
+    self updateUI.
+    UIManager default inform: 'Успішно завантажено!'.
 ]
 
 { #category : 'actions' }
@@ -147,23 +188,55 @@ LibraryPresenter >> reviewOldBooks [
 
 { #category : 'actions' }
 LibraryPresenter >> saveToDatabase [
-    "Змінити тут!!"
-    [ 
-        library save. 
-        UIManager default inform: 'Успішно синхронізовано з базою даних!' 
-    ] on: Error do: [ :err | 
-        UIManager default alert: 'Помилка підключення до БД (перевірте налаштування Voyage): ', err messageText 
-    ].
+    | targetName newLib |
+    
+    targetName := UIManager default 
+        request: 'Введіть назву для збереження бібліотеки в БД:' 
+        initialAnswer: (library name ifNil: [ 'Моя бібліотека' ]).
+        
+    targetName isEmptyOrNil ifTrue: [ ^ self ].
+    
+    "Якщо бібліотека ще не мала назви АБО назва не змінилася - просто оновлюємо поточну"
+    (library name isNil or: [ library name = targetName ]) 
+        ifTrue: [ 
+            library name: targetName.
+            library saveToDatabase.
+        ] 
+        ifFalse: [ 
+            "Якщо користувач ввів НОВУ назву - робимо копію (Save As...)"
+            newLib := Library new.
+            newLib name: targetName.
+            "Переносимо всі поточні книги у нову бібліотеку"
+            library books do: [ :each | newLib addBook: each ].
+            
+            newLib saveToDatabase.
+            library := newLib. "Тепер UI працює з цією новою бібліотекою"
+        ].
+    
+    UIManager default inform: 'Бібліотеку "', targetName, '" успішно збережено в БД!'.
 ]
 
 { #category : 'actions' }
 LibraryPresenter >> saveToFile [
-    | fileRef |
-    fileRef := UIManager default chooseForSaveFileReference: 'Зберегти бібліотеку' extensions: #('ston') path: 'library.ston'.
-    fileRef ifNotNil: [
-        library saveToSTON: fileRef.
-        UIManager default inform: 'Бібліотеку успішно збережено у файл!'.
-    ].
+    | formatIndex fileName |
+    "Запитуємо формат"
+    formatIndex := UIManager default 
+        chooseFrom: #('STON' 'Звичайний текст (експорт)' 'StoreString') 
+        title: 'Оберіть формат збереження:'.
+        
+    "Якщо користувач натиснув Cancel, припиняємо роботу"
+    formatIndex = 0 ifTrue: [ ^ self ]. 
+    
+    "Запитуємо ім'я файлу"
+    fileName := UIManager default request: 'Введіть ім''я файлу:' initialAnswer: 'library_data'.
+    fileName isEmptyOrNil ifTrue: [ ^ self ].
+    
+    "Виконуємо збереження залежно від обраного варіанту"
+    formatIndex = 1 ifTrue: [ library saveToSTON: fileName, '.ston' ].
+    formatIndex = 2 ifTrue: [ library exportToText: fileName, '.txt' ].
+    formatIndex = 3 ifTrue: [ library saveToStoreString: fileName, '.txt' ].
+    
+    UIManager default inform: 'Успішно збережено!'.
 ]
 
 { #category : 'actions' }
