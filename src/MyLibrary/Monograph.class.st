@@ -1,3 +1,12 @@
+"
+Монографія: книга, яка є різновидом однотомного видання (успадковується від SingleVolumeBook). Окрім звичайних сторінок, монографія містить спеціалізовані ілюстрації.
+
+Обсяг (totalVolume) — розраховується як сума сторінок базового однотомника (super totalVolume) та кількості ілюстрацій (illustrationCount).
+Встановити кількість ілюстрацій можна через illustrationCount:, який строго перевіряє, щоб число було цілим і невід'ємним (>= 0).
+Оператори + і - у цьому класі перевизначені так, що вони працюють саме з ілюстраціями, а не зі сторінками (на відміну від базового класу). Оператор віднімання захищений від того, щоб кількість ілюстрацій стала від'ємною (не опускається нижче 0).
+
+Instance Variables:illustrationCount	 Кількість ілюстрацій у монографії
+"
 Class {
 	#name : 'Monograph',
 	#superclass : 'SingleVolumeBook',
@@ -13,6 +22,13 @@ Class {
 Monograph class >> authors: authorCollection title: titleString publishers: publisherCollection year: aYear pageCount: anInteger illustrations: illusInteger [
     ^ (self authors: authorCollection title: titleString publishers: publisherCollection year: aYear pageCount: anInteger)
         illustrationCount: illusInteger;
+        yourself
+]
+
+{ #category : 'instance creation' }
+Monograph class >> bookFromDictionary: aDictionary [
+    ^ (super bookFromDictionary: aDictionary)
+        illustrationCount: (aDictionary at: 'illustrationCount' ifAbsent: [ nil ]);
         yourself
 ]
 
@@ -35,27 +51,35 @@ Monograph >> - aNumber [
 
 { #category : 'accessing' }
 Monograph >> illustrationCount [
-    ^ illustrationCount ifNil: [ self class defaultIllustrationCount ]
+    ^ illustrationCount
 ]
 
 { #category : 'accessing' }
-Monograph >> illustrationCount: anInteger [
-    (anInteger isInteger and: [ anInteger > 0 ]) ifFalse: [
-        self error: 'Помилка: Кількість ілюстрацій має бути додатним числом!'
+Monograph >> illustrationCount: aNumber [
+    | finalCount |
+    finalCount := aNumber ifNil: [ self class defaultIllustrationCount ].
+    (finalCount isInteger and: [ finalCount >= 0 ]) ifFalse: [
+        self error: 'Помилка: Кількість ілюстрацій має бути невід''ємним цілим числом!'
     ].
-    illustrationCount := anInteger
+    illustrationCount := finalCount
+]
+
+{ #category : 'initialization' }
+Monograph >> initialize [
+    super initialize.
+    self illustrationCount: nil.
 ]
 
 { #category : 'printing' }
 Monograph >> printVolumeInfoOn: aStream [
     aStream 
-        nextPutAll: self pageCount printString; 
+        print: self pageCount; 
         nextPutAll: ' стор. та ';
-        nextPutAll: self illustrationCount printString;
+        print: self illustrationCount;
         nextPutAll: ' іл. (загальний обсяг: ';
-        nextPutAll: self totalVolume printString;
+        print: self totalVolume;
         nextPutAll: ' стор., ';
-        nextPutAll: self printedSheets printString; 
+        print: self printedSheets; 
         nextPutAll: ' друк. арк.)'
 ]
 
