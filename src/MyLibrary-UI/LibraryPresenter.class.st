@@ -37,8 +37,9 @@ Class {
 		'loadDbButton',
 		'statusBar'
 	],
-	#category : 'MyLibrary-UI',
-	#package : 'MyLibrary-UI'
+	#category : 'MyLibrary-UI-UI',
+	#package : 'MyLibrary-UI',
+	#tag : 'UI'
 }
 
 { #category : 'accessing' }
@@ -99,10 +100,10 @@ LibraryPresenter >> ensureRepository [
 LibraryPresenter >> filterByAuthor: aString [
     "Залишає у таблиці книги, у яких ім'я чи прізвище автора містить aString (без урахування регістру)"
     | fragment |
-    fragment := aString trimBoth.
+    fragment := aString trimBoth asLowercase.
     self showFound: (library books select: [ :each |
         each authors anySatisfy: [ :author |
-            author fullName includesSubstring: fragment caseSensitive: false ] ])
+            author fullName asLowercase includesSubstring: fragment ] ])
 ]
 
 { #category : 'actions' }

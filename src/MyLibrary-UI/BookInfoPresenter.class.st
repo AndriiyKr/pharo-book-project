@@ -28,8 +28,9 @@ Class {
 		'publishersList',
 		'detailsText'
 	],
-	#category : 'MyLibrary-UI',
-	#package : 'MyLibrary-UI'
+	#category : 'MyLibrary-UI-UI',
+	#package : 'MyLibrary-UI',
+	#tag : 'UI'
 }
 
 { #category : 'accessing' }
