@@ -66,6 +66,16 @@ Publisher class >> publisherFromDictionary: aDictionary [
         yourself
 ]
 
+{ #category : 'comparing' }
+Publisher >> = anObject [
+    "Порівнюємо видавництва за назвою та датою заснування"
+    self == anObject ifTrue: [ ^ true ].
+    self class = anObject class ifFalse: [ ^ false ].
+    
+    ^ self name = anObject name 
+        and: [ self foundationYear = anObject foundationYear ]
+]
+
 { #category : 'accessing' }
 Publisher >> city [
     ^ city
@@ -90,6 +100,12 @@ Publisher >> foundationYear: aYear [
         self error: 'Помилка: foundationYear має бути екземпляром Year!' 
     ].
     foundationYear := finalYear
+]
+
+{ #category : 'comparing' }
+Publisher >> hash [
+    "Хеш залежить від полів назви та року заснування"
+    ^ self name hash bitXor: self foundationYear hash
 ]
 
 { #category : 'initialization' }
