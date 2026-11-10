@@ -44,6 +44,13 @@ Library class >> defaultName [
     ^ 'Моя бібліотека'
 ]
 
+{ #category : 'file-io' }
+Library class >> loadFromStoreString: aFileName [
+    | fileContents |
+    fileContents := aFileName asFileReference contents.
+    ^ self compiler evaluate: fileContents.
+]
+
 { #category : 'instance creation' }
 Library class >> withBooks: aCollectionOfBooks [
 	"Створює екземпляр бібліотеки та ініціалізує його переданою колекцією книг"
@@ -296,6 +303,17 @@ Library >> saveToSTON: aFileName [
     aFileName asFileReference writeStreamDo: [ :stream |
         STON put: books onStreamPretty: stream.
     ]
+]
+
+{ #category : 'file-io' }
+Library >> saveToStoreString: aFileName [
+    "Спочатку генеруємо текст у пам'яті (де підтримується #store:), а потім пишемо у файл"
+    | textData |
+    textData := String streamContents: [ :memStream | self storeOn: memStream ].
+    
+    aFileName asFileReference writeStreamDo: [ :fileStream | 
+        fileStream nextPutAll: textData 
+    ].
 ]
 
 { #category : 'statistics' }

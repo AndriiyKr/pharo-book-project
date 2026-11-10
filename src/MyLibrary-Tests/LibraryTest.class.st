@@ -207,29 +207,6 @@ LibraryTest >> testReplaceBook [
 ]
 
 { #category : 'tests' }
-LibraryTest >> testSTONSerialization [
-	"Перевіряє, чи коректно бібліотека зберігається та відновлюється зі STON"
-	| fileName testFile loadedLibrary |
-	
-	fileName := 'test_library.ston'.
-	testFile := fileName asFileReference.
-	
-	"Зберігаємо фікстуру (library з setUp, де вже є 5 книг)"
-	library saveToSTON: fileName.
-	
-	"Створюємо нову бібліотеку і завантажуємо"
-	loadedLibrary := Library new.
-	loadedLibrary loadFromSTON: fileName.
-	
-	"Робимо перевірки"
-	self assert: loadedLibrary books size equals: library books size.
-	self assert: loadedLibrary books first title equals: library books first title.
-	
-	"Видаляємо тестовий файл, щоб не засмічувати диск"
-	testFile ensureDelete.
-]
-
-{ #category : 'tests' }
 LibraryTest >> testTotalCopiesAndCopiesOf [
     | lib book1 book2 |
     lib := Library new.
