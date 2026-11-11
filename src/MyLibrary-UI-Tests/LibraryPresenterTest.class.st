@@ -12,8 +12,7 @@ Class {
 		'lisovaPisnia'
 	],
 	#category : 'MyLibrary-UI-Tests',
-	#package : 'MyLibrary-UI',
-	#tag : 'Tests'
+	#package : 'MyLibrary-UI-Tests'
 }
 
 { #category : 'helpers' }
