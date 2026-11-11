@@ -61,16 +61,17 @@ BookDialogPresenter >> addAuthor: anAuthor [
 
 { #category : 'actions - sub dialog' }
 BookDialogPresenter >> addNewVolume [
-    | num title pages |
-    num := UIManager default request: 'Номер тому (ціле число):'.
-    num ifNil: [ ^ self ].
-	 title := UIManager default request: 'Назва тому:'.
-    title ifNil: [ ^ self ].
-    pages := UIManager default request: 'Кількість сторінок:'.
-    pages ifNil: [ ^ self ].
-    [ self addVolumeNumber: num trimBoth asInteger title: title pages: pages trimBoth asInteger ]
-        on: Error
-        do: [ :error | UIManager default alert: error messageText ]
+    | dialog |
+    dialog := VolumeFormPresenter new.
+    dialog openModal.
+    
+    dialog volume ifNotNil: [ :newVol |
+        [ 
+            self addVolumeNumber: newVol volumeNumber pages: newVol pageCount.
+        ] 
+        on: Error 
+        do: [ :error | UIManager default alert: error messageText ].
+    ].
 ]
 
 { #category : 'actions' }
