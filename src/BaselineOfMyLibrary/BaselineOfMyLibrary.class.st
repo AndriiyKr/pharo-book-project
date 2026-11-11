@@ -7,12 +7,13 @@ Class {
 }
 
 { #category : 'baselines' }
-BaselineOfMyLibrary >> baseline: spec [
+BaselineOfMyLibrary >> baseline: spec [ 
     <baseline>
     spec for: #common do: [ 
         spec package: 'MyLibrary'.
-		  spec package: 'MyLibrary-UI' with: [ spec requires: #('MyLibrary') ].
-        spec package: 'MyLibrary-Tests' with: [ spec requires: #('MyLibrary') ]
+        spec package: 'MyLibrary-UI' with: [ spec requires: #('MyLibrary') ].
+        spec package: 'MyLibrary-Tests' with: [ spec requires: #('MyLibrary') ].
+        spec package: 'MyLibrary-UI-Tests' with: [ spec requires: #('MyLibrary-UI' 'MyLibrary-Tests') ]
     ]
 ]
 
