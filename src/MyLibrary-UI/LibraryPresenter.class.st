@@ -190,6 +190,7 @@ LibraryPresenter >> loadFromDatabaseNamed: aName [
     "Підміняє бібліотеку вікна бібліотекою з БД. Відповідає false, якщо такої назви в БД немає"
     | loaded |
     self ensureRepository.
+	 VORepository current flushCache.
     loaded := Library loadFromDatabase: aName.
     loaded ifNil: [ ^ false ].
     library := loaded.
@@ -291,6 +292,8 @@ LibraryPresenter >> saveToDatabaseAs: aName [
             target := Library new.
             target name: aName.
             library books do: [ :each | target addBook: each ] ].
+	 (Library selectMany: [ :each | each name = aName ])
+        do: [ :each | each == target ifFalse: [ each remove ] ].
     target saveToDatabase.
     library := target.
     ^ target
