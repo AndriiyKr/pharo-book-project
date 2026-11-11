@@ -219,11 +219,22 @@ BookDialogPresenter >> createNewAuthor [
 
 { #category : 'actions - sub dialog' }
 BookDialogPresenter >> createNewPublisher [
-    | pName |
-    pName := UIManager default request: 'Назва видавництва:'.
-    pName ifNil: [ ^ self ].
-    (self addPublisher: (Publisher new name: pName trimBoth; yourself))
-        ifFalse: [ UIManager default inform: 'Таке видавництво вже є у списку.' ]
+    | dialog existingPublishers |
+    dialog := PublisherFormPresenter new.
+    dialog openModal.
+    
+    dialog publisher ifNotNil: [ :newPub |
+        existingPublishers := publishersList items.
+        (existingPublishers includes: newPub)
+            ifTrue: [ 
+                UIManager default inform: 'Таке видавництво вже є у списку.' 
+            ]
+            ifFalse: [ 
+                publishersList items: (existingPublishers asOrderedCollection 
+                    add: newPub; 
+                    yourself) 
+            ].
+    ].
 ]
 
 { #category : 'layout' }
