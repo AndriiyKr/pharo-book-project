@@ -83,7 +83,8 @@ BookInfoPresenter >> detailsDescription [
 		            book volumes
 		                do: [ :each |
 			                  s nextPutAll: ' - Том '; print: each volumeNumber;
-	                        nextPutAll: ' ('; print: each pageCount; nextPutAll: ' стор.)' ]
+    								nextPutAll: ' «'; nextPutAll: each titleVolume;
+								   nextPutAll: '» ('; print: each pageCount; nextPutAll: ' стор.)' ]
                 separatedBy: [ s cr ] ].
         (book isKindOf: SingleVolumeBook) ifTrue: [
 	            s nextPutAll: 'Сторінок: '; print: book pageCount ].

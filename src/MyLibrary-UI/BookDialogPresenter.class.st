@@ -61,12 +61,14 @@ BookDialogPresenter >> addAuthor: anAuthor [
 
 { #category : 'actions - sub dialog' }
 BookDialogPresenter >> addNewVolume [
-    | num pages |
+    | num title pages |
     num := UIManager default request: 'Номер тому (ціле число):'.
     num ifNil: [ ^ self ].
+	 title := UIManager default request: 'Назва тому:'.
+    title ifNil: [ ^ self ].
     pages := UIManager default request: 'Кількість сторінок:'.
     pages ifNil: [ ^ self ].
-    [ self addVolumeNumber: num trimBoth asInteger pages: pages trimBoth asInteger ]
+    [ self addVolumeNumber: num trimBoth asInteger title: title pages: pages trimBoth asInteger ]
         on: Error
         do: [ :error | UIManager default alert: error messageText ]
 ]
@@ -88,6 +90,23 @@ BookDialogPresenter >> addVolumeNumber: aNumber pages: aPageCount [
     | volume |
     volume := Volume new
         volumeNumber: aNumber;
+        pageCount: aPageCount;
+        yourself.
+    (volumesList items anySatisfy: [ :each | each volumeNumber = aNumber ])
+        ifTrue: [ self error: 'Том з таким номером уже додано!' ].
+    volumesList items: (volumesList items copyWith: volume).
+    ^ volume
+]
+
+{ #category : 'actions' }
+BookDialogPresenter >> addVolumeNumber: aNumber title: aTitle pages: aPageCount [
+    "Додає том з назвою. Некоректні дані, порожня назва або повторний номер тому дають Error"
+    | volume |
+    (aTitle isNil or: [ aTitle trimBoth isEmpty ])
+        ifTrue: [ self error: 'Введіть назву тому!' ].
+    volume := Volume new
+        volumeNumber: aNumber;
+        titleVolume: aTitle trimBoth;
         pageCount: aPageCount;
         yourself.
     (volumesList items anySatisfy: [ :each | each volumeNumber = aNumber ])
@@ -287,7 +306,7 @@ BookDialogPresenter >> initializePresenters [
     pagesInput := self newNumberInput.
     illusInput := self newNumberInput.
     volumesList := self newList
-        display: [ :each | 'Том ', each volumeNumber printString, ' (', each pageCount printString, ' стор.)' ];
+        display: [ :each | 'Том ', each volumeNumber printString, ' «', each titleVolume, '» (', each pageCount printString, ' стор.)' ];
         yourself.
     addVolumeBtn := self newButton label: 'Додати том'; iconName: #smallAdd; yourself.
     removeVolumeBtn := self newButton label: 'Видалити том'; iconName: #smallDelete; yourself.
