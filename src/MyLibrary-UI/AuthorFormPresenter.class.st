@@ -9,13 +9,19 @@ Class {
 		'saveButton',
 		'author'
 	],
-	#category : 'MyLibrary-UI',
-	#package : 'MyLibrary-UI'
+	#category : 'MyLibrary-UI-UI',
+	#package : 'MyLibrary-UI',
+	#tag : 'UI'
 }
 
 { #category : 'accessing' }
 AuthorFormPresenter >> author [
     ^ author
+]
+
+{ #category : 'connections' }
+AuthorFormPresenter >> connectPresenters [
+    saveButton action: [ self processForm ].
 ]
 
 { #category : 'layout' }
@@ -30,6 +36,14 @@ AuthorFormPresenter >> defaultLayout [
 ]
 
 { #category : 'initialization' }
+AuthorFormPresenter >> initializeDialogWindow: aDialogWindowPresenter [
+    self initializeWindow: aDialogWindowPresenter.
+    aDialogWindowPresenter 
+        addButton: 'Скасувати' 
+        do: [ :dialog | dialog close ].
+]
+
+{ #category : 'initialization' }
 AuthorFormPresenter >> initializePresenters [
     firstNameInput := self newTextInput placeholder: 'Ім''я'.
     lastNameInput := self newTextInput placeholder: 'Прізвище'.
@@ -40,5 +54,28 @@ AuthorFormPresenter >> initializePresenters [
 
 { #category : 'initialization' }
 AuthorFormPresenter >> initializeWindow: aWindowPresenter [
-    aWindowPresenter title: 'Новий автор'; initialExtent: 350@300.
+    aWindowPresenter title: 'Новий автор'; initialExtent: 350@350.
+]
+
+{ #category : 'actions' }
+AuthorFormPresenter >> processForm [
+    | parsedDate |
+    (firstNameInput text isEmpty or: [ lastNameInput text isEmpty ]) 
+        ifTrue: [ ^ UIManager default alert: 'Заповніть ім''я та прізвище!' ].
+        
+    author := Author new.
+    author firstName: firstNameInput text; lastName: lastNameInput text.
+    
+    cityInput text ifNotEmpty: [ :c | author city: c ].
+    
+    birthDateInput text ifNotEmpty: [ :textDate | 
+        [
+            parsedDate := Date readFrom: textDate readStream pattern: 'd.m.y'.
+            author birthDate: parsedDate.
+        ] on: Error do: [ 
+            ^ UIManager default alert: 'Неправильний формат дати! Будь ласка, введіть дату як день.місяць.рік (наприклад: 24.08.1991)' 
+        ]
+    ]. 
+    
+    self window close.
 ]

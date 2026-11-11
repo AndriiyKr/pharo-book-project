@@ -180,16 +180,22 @@ BookDialogPresenter >> connectPresenters [
 
 { #category : 'actions - sub dialog' }
 BookDialogPresenter >> createNewAuthor [
-    | fName lName |
-    fName := UIManager default request: 'Ім''я автора:'.
-    fName ifNil: [ ^ self ].
-    lName := UIManager default request: 'Прізвище автора:'.
-    lName ifNil: [ ^ self ].
-    (self addAuthor: (Author new
-            firstName: fName trimBoth;
-            lastName: lName trimBoth;
-            yourself))
-        ifFalse: [ UIManager default inform: 'Такий автор уже є у списку.' ]
+    | dialog existingAuthors |
+    dialog := AuthorFormPresenter new.
+    dialog openModal.
+    
+    dialog author ifNotNil: [ :newAuth |
+        existingAuthors := authorsList items.
+        (existingAuthors includes: newAuth)
+            ifTrue: [ 
+                UIManager default inform: 'Такий автор уже є у списку.' 
+            ]
+            ifFalse: [ 
+                authorsList items: (existingAuthors asOrderedCollection 
+                    add: newAuth; 
+                    yourself) 
+            ].
+    ].
 ]
 
 { #category : 'actions - sub dialog' }
@@ -250,6 +256,14 @@ BookDialogPresenter >> existingPublishers [
 { #category : 'accessing' }
 BookDialogPresenter >> illusInput [
     ^ illusInput
+]
+
+{ #category : 'initialization' }
+BookDialogPresenter >> initializeDialogWindow: aDialogWindowPresenter [
+    self initializeWindow: aDialogWindowPresenter.
+    aDialogWindowPresenter 
+        addButton: 'Скасувати' 
+        do: [ :dialog | dialog close ].
 ]
 
 { #category : 'initialization' }
