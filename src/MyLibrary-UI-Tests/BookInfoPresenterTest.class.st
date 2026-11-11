@@ -50,8 +50,8 @@ BookInfoPresenterTest >> testDetailsOfMultivolumeBook [
     | text |
     text := (BookInfoPresenter on: self newMultivolumeBook) detailsText text.
     self assert: (text includesSubstring: 'Кількість томів: 2').
-    self assert: (text includesSubstring: ' - Том 1 (200 стор.)').
-    self assert: (text includesSubstring: ' - Том 2 (300 стор.)').
+    self assert: (text includesSubstring: ' - Том 1 «А» (200 стор.)').
+    self assert: (text includesSubstring: ' - Том 2 «Б» (300 стор.)').
     self assert: (text includesSubstring: 'Загальний обсяг: 500')
 ]
 
